@@ -3,12 +3,11 @@
 import io
 import logging
 import json
+from calender.common.utils import auth_get, auth_post
 from calender.externals.data import *
 from calender.constant import API_BO, OPEN_API, ADMIN_ACCOUNT, DOMAIN_ID
 import tornado.gen
 from calender.common import globalData
-from calender.common.fileCache import *
-import requests
 import uuid
 import pytz
 
@@ -19,35 +18,35 @@ def get_time_zone():
     external_key_url = API_BO["TZone"]["external_key_url"]
     headers = {
         "content-type": "application/x-www-form-urlencoded",
-        "charset": "UTF-8"
+        "charset": "UTF-8",
+        "consumerKey": OPEN_API["consumerKey"]
     }
 
-    body = '"account" : ADMIN_ACCOUNT'
-    response = requests.post(external_key_url, data=json.dumps(body),
-                             headers=headers)
+    response = auth_post(external_key_url, headers=headers)
     if response.status_code != 200 or response.content is None:
         LOGGER.info("get external key failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
         return None
     tmp_req = json.loads(response.content)
-    if "externalKey" not in tmp_req:
+
+    external_key = tmp_req.get("externalKey", None)
+    if external_key is None:
         return None
-    external_key = tmp_req["externalKey"]
 
     time_zone_url = API_BO["TZone"]["time_zone_url"]
     time_zone_url = time_zone_url.replace("DOMAIN_ID", DOMAIN_ID)
     time_zone_url = time_zone_url.replace("EXTERNAL_KEY", external_key)
 
-    headers = API_BO["headers"]
-    response = requests.get(time_zone_url, headers=headers)
+    headers["content-type"] = "application/json"
+    response = auth_get(time_zone_url, headers=headers)
     if response.status_code != 200 or response.content is None:
         LOGGER.info("get external key failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
         return None
+
     tmp_req = json.loads(response.content)
-    if "timeZone" not in tmp_req:
-        return None
-    return tmp_req["timeZone"]
+    time_zone = tmp_req.get("timeZone", None)
+    return time_zone
 
 
 def get_offset_by_timezone(time_zone):
@@ -120,16 +119,16 @@ def create_calender():
         "invitationMapListJson": {
             "email": ADMIN_ACCOUNT,
             "actionType": "insert"
-            # "roleId": "2"
         }
     }
+
     headers = create_headers()
     url = API_BO["calendar"]["create_calender_url"]
-    LOGGER.info("create calender . url:%s body:%s", url, str(body))
+    LOGGER.info("create calender. url:%s body:%s", url, str(body))
 
-    response = requests.post(url, data=json.dumps(body), headers=headers)
+    response = auth_post(url, data=json.dumps(body), headers=headers)
     if response.status_code != 200:
-        LOGGER.info("push message failed. url:%s text:%s body:%s",
+        LOGGER.info("create calender failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
         return None
 
@@ -148,13 +147,13 @@ def get_calenders(time):
         url = url + "?syncToken=" + time
     LOGGER.info("create calender . url:%s body:%s", url, str(body))
 
-    response = requests.GET(url, headers=headers)
+    response = auth_get(url, headers=headers)
     if response.status_code != 200:
-        LOGGER.info("push message failed. url:%s text:%s body:%s",
+        LOGGER.info("get calender failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
         return None
 
-    LOGGER.info("push message success. url:%s txt:%s body:%s",
+    LOGGER.info("get calender success. url:%s txt:%s body:%s",
                 url, response.text, response.content)
     return json.loads(response.content)
 
@@ -172,13 +171,13 @@ def create_schedules(calendar_id, begin, end, current, account_id):
     url = API_BO["calendar"]["create_schedule_url"]
     LOGGER.info("create calender . url:%s body:%s", url, str(body))
 
-    response = requests.post(url, data=json.dumps(body), headers=headers)
+    response = auth_post(url, data=json.dumps(body), headers=headers)
     if response.status_code != 200:
-        LOGGER.info("push message failed. url:%s text:%s body:%s",
+        LOGGER.info("create schedules failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
         return None
 
-    LOGGER.info("push message success. url:%s txt:%s body:%s",
+    LOGGER.info("create schedules success. url:%s txt:%s body:%s",
                 url, response.text, response.content)
     tmp_req = json.loads(response.content)
     if tmp_req["result"] != "success":
@@ -195,15 +194,15 @@ def modify_schedules(uid, calendar_id, begin, end, current, account_id):
 
     headers = create_headers()
     url = API_BO["calendar"]["modify_schedule_url"]
-    LOGGER.info("create calender . url:%s body:%s", url, str(body))
+    LOGGER.info("modify calender . url:%s body:%s", url, str(body))
 
-    response = requests.post(url, data=json.dumps(body), headers=headers)
+    response = auth_post(url, data=json.dumps(body), headers=headers)
     if response.status_code != 200:
-        LOGGER.info("push message failed. url:%s text:%s body:%s",
+        LOGGER.info("modify calender failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
         return None
 
-    LOGGER.info("push message success. url:%s txt:%s body:%s",
+    LOGGER.info("modify calender success. url:%s txt:%s body:%s",
                 url, response.text, response.content)
     tmp_req = json.loads(response.content)
     if tmp_req["result"] != "success":

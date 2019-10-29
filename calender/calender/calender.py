@@ -18,6 +18,11 @@ from calender.common import globalData
 from calender.externals.data import *
 from calender.externals.calenderReq import *
 from calender.constant import API_BO, LOCAL
+# from calender.constant import SSL_CERT, SSL_KEY
+from calender.model.calenderDBHandle import create_calender_table
+from calender.model.initStatusDBHandle import create_init_status, \
+    insert_init_status, get_action_info
+from calender.model.processStatusDBHandle import create_process_status_table
 
 import psutil
 
@@ -78,8 +83,29 @@ def init_logger():
     logging.getLogger("tornado.general").addHandler(file_handler)
 
 
+def init_db():
+    create_calender_table()
+    create_process_status_table()
+    create_init_status()
+
+
+def check_init_bot():
+    extra = get_action_info("bot_no")
+    if extra is None:
+        return False
+    globalData.set_value("bot_no", extra)
+    return True
+
+
 def init_rich_menu_first():
-    rich_menus = init_rich_menu(LOCAL)
+    extra = get_action_info("rich_menu")
+
+    if extra is None:
+        rich_menus = init_rich_menu(LOCAL)
+        insert_init_status("rich_menu", json.dumps(rich_menus))
+    else:
+        rich_menus = json.loads(extra)
+
     if rich_menus is None:
         raise Exception("init rich menu failed.")
     else:
@@ -88,7 +114,11 @@ def init_rich_menu_first():
 
 
 def init_calender_first():
-    calender_id = init_calender()
+    calender_id = get_action_info("calender")
+    if calender_id is None:
+        calender_id = init_calender()
+        insert_init_status("calender", calender_id)
+
     if calender_id is None:
         raise Exception("init calender failed.")
     else:
@@ -100,15 +130,25 @@ def start_calender():
     the calender launch code
     """
     server = tornado.httpserver.HTTPServer(calender.router.getRouter())
+
+    """
+    server = tornado.httpserver.HTTPServer(calender.router.getRouter(), ssl_options={
+        "certfile": os.path.join(SSL_CERT),
+        "keyfile": os.path.join(SSL_KEY),
+    })
+    """
+
     server.bind(options.port)
     server.start(1)
 
     init_logger()
-    try:
-        init_rich_menu_first()
-        # init_calender_first()
-    except Exception as ex:
-        print("init failed %s" % (str(ex),))
+    init_db()
+    if check_init_bot():
+        try:
+            init_rich_menu_first()
+            # init_calender_first()
+        except Exception as ex:
+            print("init failed %s" % (str(ex),))
 
     asyncio.get_event_loop().run_forever()
     server.stop()

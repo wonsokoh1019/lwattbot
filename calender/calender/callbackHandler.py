@@ -12,12 +12,13 @@ from calender.externals.sendMessage import push_message
 from calender.common import globalData
 from calender.externals.richmenu import *
 from calender.externals.calenderReq import *
-from calender.constant import API_BO, RICH_MENUS, RECEIVE_ACCOUNT
+from calender.constant import API_BO, RICH_MENUS, RECEIVE_ACCOUNT, LOCAL
 from calender.externals.data import *
 from calender.common import globalData
-from calender.common.fileCache import *
 from calender.message import *
 from calender.checkParameter import *
+from calender.model.processStatusDBHandle import *
+from calender.model.calenderDBHandle import *
 
 LOGGER = logging.getLogger("calender")
 
@@ -43,7 +44,7 @@ def deal_logic(checker):
         contents = yield deal_message(account_id, checker.text, create_time)
 
         if contents is None:
-            return False, "contents is None"
+            return True, "contents is None"
 
         for content in contents:
             request["content"] = content
@@ -64,7 +65,7 @@ def deal_logic(checker):
                         str(room_id), str(account_id))
             return False, "send message failed."
 
-        request["content"] = image_interduce()
+        request["content"] = image_introduce()
         error_code = yield push_message(request)
         if error_code:
             LOGGER.info("image_interduce failed. room_id:%s account_id:%s",
@@ -75,6 +76,8 @@ def deal_logic(checker):
 
     elif checker.cmd == UserCmd.CLEAN:
         clean_status_by_user(account_id, current_date)
+        clean_schedule_by_user(account_id, current_date)
+        return True, None
 
     elif checker.cmd == UserCmd.TO_FIRST:
         request["content"] = to_first()
@@ -83,7 +86,7 @@ def deal_logic(checker):
             LOGGER.info("yield to_first failed. room_id:%s account_id:%s",
                         str(room_id), str(account_id))
             return False, "send message failed."
-        return error_code, None
+        return True, None
     elif checker.cmd == UserCmd.SIGN_IN:
         request["content"] = yield sign_in(account_id, create_time)
         error_code = yield push_message(request)
@@ -91,7 +94,7 @@ def deal_logic(checker):
             LOGGER.info("yield sgin in failed. room_id:%s account_id:%s",
                         str(room_id), str(account_id))
             return False, "send message failed."
-        return error_code, None
+        return True, None
 
     elif checker.cmd == UserCmd.SIGN_OUT:
         request["content"] = yield sign_out(account_id, create_time)
@@ -100,7 +103,7 @@ def deal_logic(checker):
             LOGGER.info("sign_out failed. room_id:%s account_id:%s",
                         str(room_id), str(account_id))
             return False, "send message failed."
-        return error_code, None
+        return True, None
 
     elif checker.cmd == UserCmd.DIRECT_SIGN_IN:
         request["content"] = yield deal_sign_in(account_id,
@@ -111,7 +114,7 @@ def deal_logic(checker):
                         "room_id:%s account_id:%s",
                         str(room_id), str(account_id))
             return False, "send message failed."
-        return error_code, None
+        return True, None
 
     elif checker.cmd == UserCmd.DIRECT_SIGN_OUT:
         request["content"] = yield deal_sign_out(account_id, create_time,
@@ -122,7 +125,7 @@ def deal_logic(checker):
                         "room_id:%s account_id:%s",
                         str(room_id), str(account_id))
             return False, "send message failed."
-        return error_code, None
+        return True, None
 
     elif checker.cmd == UserCmd.MANUAL_SIGN_IN:
         contents = yield manual_sign_in(account_id, create_time)
@@ -139,7 +142,7 @@ def deal_logic(checker):
                             "room_id:%s account_id:%s",
                             str(room_id), str(account_id))
                 return False, "send message failed."
-        return error_code, None
+        return True, None
 
     elif checker.cmd == UserCmd.MANUAL_SIGN_OUT:
         contents = yield manual_sign_out(account_id, create_time)
@@ -156,7 +159,7 @@ def deal_logic(checker):
                             "room_id:%s account_id:%s",
                             str(room_id), str(account_id))
                 return False, "send message failed."
-        return error_code, None
+        return True, None
 
     elif checker.cmd == UserCmd.CONFIRM_IN:
         message = checker.post_back
@@ -172,9 +175,9 @@ def deal_logic(checker):
                             "room_id:%s account_id:%s",
                             str(room_id), str(account_id))
                 return False, "send message failed."
-            set_status_by_user_date(account_id, current_date,
+            insert_replace_status_by_user_date(account_id, current_date,
                                     status="in_done", process="sign_in_done")
-            return error_code, None
+            return True, None
         return False, "confirm in failed."
 
     elif checker.cmd == UserCmd.CONFIRM_OUT:
@@ -199,13 +202,12 @@ def deal_logic(checker):
         return True, None
 
 
-
 @tornado.gen.coroutine
 def sign(account_id):
     if account_id is None:
         LOGGER.error("account_id is None.")
         return False
-    rich_menu_id = globalData.get_value(RICH_MENUS["kr"]["name"], None)
+    rich_menu_id = globalData.get_value(RICH_MENUS[LOCAL]["name"], None)
     if rich_menu_id is None:
         LOGGER.error("get rich_menu_id failed.")
         return False, "get rich_menu_id failed."
@@ -222,10 +224,10 @@ def sign_in(account_id, create_time):
 
     process = None
     if content is not None:
-        status = content.get("status", None)
-        process = content.get("process", None)
+        status = content[0]
+        process = content[1]
         if status == "wait_in":
-            set_status_by_user_date(account_id, current_date, delete_flag=True)
+            delete_status_by_user_date(account_id, current_date)
 
     if process is not None:
         return reminder_message("sign_in_done")
@@ -241,16 +243,13 @@ def sign_out(account_id, create_time):
 
     process = None
     if content is not None:
-        status = content.get("status", None)
-        process = content.get("process", None)
+        status = content[0]
+        process = content[1]
         if status == "wait_out":
             set_status_by_user_date(account_id, current_date, status="in_done")
 
     if process is None or process != "sign_in_done":
         return reminder_message(None)
-
-    # if process == "sign_out_done":
-        # return reminder_message("sign_out_done")
 
     return sign_out_message()
 
@@ -262,8 +261,8 @@ def deal_sign_in(account_id, create_time, sign_time, manual_flag=False):
     content = get_status_by_user(account_id, current_date)
 
     if content is not None:
-        status = content.get("status", None)
-        process = content.get("process", None)
+        status = content[0]
+        process = content[1]
         if status == "in_done" or process is not None:
             return invalid_message()
 
@@ -278,8 +277,8 @@ def deal_sign_out(account_id, create_time, sign_time, manual_flag=False):
 
     process = None
     if content is not None:
-        status = content.get("status", None)
-        process = content.get("process", None)
+        status = content[0]
+        process = content[1]
         if status == "out_done":
             return invalid_message()
 
@@ -297,21 +296,12 @@ def manual_sign_in(account_id, create_time):
     current_date = time.strftime("%Y-%m-%d", local_time)
     content = get_status_by_user(account_id, current_date)
 
-    process = None
-    if content is not None:
-        process = content.get("process", None)
-
-    if process is not None:
+    if content is not None and content[1] is not None:
         return [invalid_message()]
 
-    contents = manual_sign_in_message()
+    insert_replace_status_by_user_date(account_id, current_date, "wait_in")
 
-    error_code, error_message = \
-        set_status_by_user_date(account_id, current_date, "wait_in")
-    if not error_code:
-        LOGGER.error("set_status_by_user_date failed.")
-        return None
-    return contents
+    return manual_sign_in_message()
 
 
 @tornado.gen.coroutine
@@ -322,21 +312,12 @@ def manual_sign_out(account_id, create_time):
     current_date = time.strftime("%Y-%m-%d", local_time)
     content = get_status_by_user(account_id, current_date)
 
-    process = None
-    if content is not None:
-        process = content.get("process", None)
-
-    if process is None or process != "sign_in_done":
+    if content is None or content[1] is None or content[1] != "sign_in_done":
         return [invalid_message()]
 
-    contents = yield manual_sign_out_message()
+    set_status_by_user_date(account_id, current_date, "wait_out")
 
-    error_code, error_message = \
-        set_status_by_user_date(account_id, current_date, "wait_out")
-    if not error_code:
-        LOGGER.error("set_status_by_user_date failed.")
-        return None
-    return contents
+    return manual_sign_out_message()
 
 
 @tornado.gen.coroutine
@@ -365,8 +346,8 @@ def confirm_in(account_id, callback):
     info = get_schedule_by_user(account_id, current_date)
     schedule_id = str(uuid.uuid4()) + account_id
     if info is None:
-        set_schedule_by_user(account_id, current_date,
-                             schedule_id, my_time, my_end_time)
+        set_schedule_by_user(schedule_id, account_id, current_date,
+                             my_time, my_end_time)
     """
     current_date = time.strftime("%Y-%m-%d", time.localtime(my_time))
     calender_id = globalData.get_value(API_BO["calendar"]["name"], None)
@@ -385,14 +366,13 @@ def confirm_in(account_id, callback):
             LOGGER.info("create_schedules failed account_id:%s, room_id:%s",
                             str(account_id))
             return None
-        set_schedule_by_user(account_id, current_date,
-                            schedule_id, my_time, my_end_time)
+        set_schedule_by_user(schedule_id, account_id, current_date,
+                             my_time, my_end_time)
     else:
         LOGGER.info("schedules has exist."
                     "account_id:%s, room_id:%s", str(account_id))
         return None
     """
-    LOGGER.info("schedule_id is None account_id:%s", str(account_id))
     # text = confirm_in_send_to_admin_message(account_id, local_time)
     # yield send_to_admin(text)
 
@@ -421,12 +401,12 @@ def confirm_out(account_id, callback):
                         "room_id:%s", str(account_id))
             return False, "calender_id is None."
     """
-    begin_time = 0
-    schedule_id = None
+
     info = get_schedule_by_user(account_id, current_date)
-    if info is not None:
-        schedule_id = info["schedule_id"]
-        begin_time = info["begin"]
+    if info is None:
+        return None, False
+    schedule_id = info[0]
+    begin_time = info[1]
     """
         if not modify_schedules(calendar_id, begin_time, my_time, my_time):
             LOGGER.info("modify_schedules failed account_id:%s",
@@ -435,13 +415,13 @@ def confirm_out(account_id, callback):
             LOGGER.info("schedule_id is None account_id:%s",
                         str(account_id))
             return None, False
-        modify_schedule_by_user(account_id, current_date, schedule_id, my_time)
+        modify_schedule_by_user(schedule_id, my_time)
     else:
         LOGGER.info("schedules has exist. account_id:%s, room_id:%s",
                     str(account_id))
         return None, False
     """
-    modify_schedule_by_user(account_id, current_date, schedule_id, my_time)
+    modify_schedule_by_user(schedule_id, my_time)
     LOGGER.info("schedule_id is None account_id:%s", str(account_id))
 
     if my_time < begin_time:
@@ -465,13 +445,13 @@ def deal_message(account_id, message, create_time):
     current_date = time.strftime("%Y-%m-%d", local_time)
     content = get_status_by_user(account_id, current_date)
 
-    if content is None or "status" not in content:
-        LOGGER.info("status is None account_id:%s message:%s",
-                    account_id, message)
+    if content is None or content[0] is None:
+        LOGGER.info("status is None account_id:%s message:%s content:%s",
+                    account_id, message, str(content))
         return None
 
-    status = content.get("status", None)
-    process = content.get("process", None)
+    status = content[0]
+    process = content[1]
     try:
         user_time = int(message)
     except Exception as e:
@@ -493,12 +473,12 @@ def deal_message(account_id, message, create_time):
     if status == "wait_in":
         content = yield deal_sign_in(account_id,
                                      create_time, user_time_ticket, True)
-        set_status_by_user_date(account_id, current_date, "in_done")
+        set_status_by_user_date(account_id, current_date, status="in_done")
         return [content]
     if status == "wait_out":
         content = yield deal_sign_out(account_id,
                                       create_time, user_time_ticket, True)
-        set_status_by_user_date(account_id, current_date, "out_done")
+        set_status_by_user_date(account_id, current_date, status="out_done")
         return [content]
     if process == "sign_in_done" or process == "sign_out_done":
         return [invalid_message()]

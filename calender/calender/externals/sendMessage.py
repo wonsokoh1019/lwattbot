@@ -4,8 +4,8 @@ import io
 import logging
 from calender.externals.data import *
 import tornado.gen
+from calender.common.utils import auth_post, replace_url_bot_no
 from tornado.httpclient import AsyncHTTPClient
-import requests
 from calender.constant import API_BO, OPEN_API
 
 
@@ -21,32 +21,6 @@ type req struct {
 
 
 @tornado.gen.coroutine
-def send_message(req, header=None):
-    LOGGER.info("deail send_message")
-    error_code = False
-    headers = API_BO["headers"]
-    if header is not None:
-        headers = Merge(header, headers)
-
-    headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
-
-    url = API_BO["url"]
-    client = AsyncHTTPClient()
-    LOGGER.info("send message . url:%s body:%s headers:%s",
-                url, str(req), str(headers))
-    response = yield client.fetch(url,
-                                  headers=headers,
-                                  method='POST',
-                                  body=json.dumps(req))
-    if response.code != 200:
-        error_code = True
-        LOGGER.info("send message failed. url:%s body:%s", url, response.body)
-    LOGGER.info("send message success. url:%s body:%s", url, response.body)
-    return error_code
-
-
-@tornado.gen.coroutine
 def push_message(req, header=None):
     LOGGER.info("detail push_message")
     error_code = False
@@ -54,16 +28,20 @@ def push_message(req, header=None):
     if header is not None:
         headers = Merge(header, headers)
     headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
 
     url = API_BO["push_url"]
+    url = replace_url_bot_no(url)
+    if url is None:
+        LOGGER.info("user_no is None . url:%s", url)
+        return True
+
     LOGGER.info("push message . url:%s body:%s headers:%s",
                 url, str(req), str(headers))
-    response = requests.post(url, data=json.dumps(req), headers=headers)
+    response = auth_post(url, data=json.dumps(req), headers=headers)
     if response.status_code != 200:
-        error_code = True
         LOGGER.info("push message failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
+        return True
     LOGGER.info("push message success. url:%s txt:%s body:%s",
                 url, response.text, response.content)
     return error_code

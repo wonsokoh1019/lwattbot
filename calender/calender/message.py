@@ -39,16 +39,13 @@ def first_message():
     return text
 
 
-def image_interduce():
-    resource_kr0 = \
-        make_i18n_image_resource_id("ko_KR",
-                                    IMAGE_CAROUSEL["resource_id"]["kr"][0])
-    resource_en0 = \
-        make_i18n_image_resource_id("en_US",
-                                    IMAGE_CAROUSEL["resource_id"]["en"][0])
-    resource_jp0 = \
-        make_i18n_image_resource_id("ja_JP",
-                                    IMAGE_CAROUSEL["resource_id"]["jp"][0])
+def image_introduce():
+    resource_kr0 = make_i18n_image_url("ko_KR",
+                                       IMAGE_CAROUSEL["resource_url"]["kr"][0])
+    resource_en0 = make_i18n_image_url("en_US",
+                                       IMAGE_CAROUSEL["resource_url"]["en"][0])
+    resource_jp0 = make_i18n_image_url("ja_JP",
+                                       IMAGE_CAROUSEL["resource_url"]["jp"][0])
     i18n_resource0 = [resource_kr0, resource_en0, resource_jp0]
 
     jp_text0 = make_i18n_label("ja_JP", "今使ってみてください")
@@ -74,19 +71,16 @@ def image_interduce():
                                    i18n_labels=display_label0)
 
     column1 = make_image_carousel_column(
-        image_resource_id=IMAGE_CAROUSEL["resource_id"]["kr"][0],
-        i18n_image_resource_ids=i18n_resource0,
+        image_url=IMAGE_CAROUSEL["resource_url"]["kr"][0],
+        i18n_image_urls=i18n_resource0,
         action=action1)
 
-    resource_kr1 = \
-        make_i18n_image_resource_id("ko_KR",
-                                    IMAGE_CAROUSEL["resource_id"]["kr"][1])
-    resource_en1 = \
-        make_i18n_image_resource_id("en_US",
-                                    IMAGE_CAROUSEL["resource_id"]["en"][1])
-    resource_jp1 = \
-        make_i18n_image_resource_id("ja_JP",
-                                    IMAGE_CAROUSEL["resource_id"]["jp"][1])
+    resource_kr1 = make_i18n_image_url("ko_KR",
+                                       IMAGE_CAROUSEL["resource_url"]["kr"][1])
+    resource_en1 = make_i18n_image_url("en_US",
+                                       IMAGE_CAROUSEL["resource_url"]["en"][1])
+    resource_jp1 = make_i18n_image_url("ja_JP",
+                                       IMAGE_CAROUSEL["resource_url"]["jp"][1])
     i18n_resource1 = [resource_kr1, resource_en1, resource_jp1]
 
     display_text_jp1 = \
@@ -112,19 +106,16 @@ def image_interduce():
                              i18n_labels=display_label0)
     column2 = \
         make_image_carousel_column(
-            image_resource_id=IMAGE_CAROUSEL["resource_id"]["kr"][1],
-            i18n_image_resource_ids=i18n_resource1,
+            image_url=IMAGE_CAROUSEL["resource_url"]["kr"][1],
+            i18n_image_urls=i18n_resource1,
             action=action2)
 
-    resource_kr2 = \
-        make_i18n_image_resource_id("ko_KR",
-                                    IMAGE_CAROUSEL["resource_id"]["kr"][2])
-    resource_en2 = \
-        make_i18n_image_resource_id("en_US",
-                                    IMAGE_CAROUSEL["resource_id"]["en"][2])
-    resource_jp2 = \
-        make_i18n_image_resource_id("ja_JP",
-                                    IMAGE_CAROUSEL["resource_id"]["jp"][2])
+    resource_kr2 = make_i18n_image_url("ko_KR",
+                                       IMAGE_CAROUSEL["resource_url"]["kr"][2])
+    resource_en2 = make_i18n_image_url("en_US",
+                                       IMAGE_CAROUSEL["resource_url"]["en"][2])
+    resource_jp2 = make_i18n_image_url("ja_JP",
+                                       IMAGE_CAROUSEL["resource_url"]["jp"][2])
     i18n_resource2 = [resource_kr2, resource_en2, resource_jp2]
 
     display_text_jp2 = i18n_display_text("ja_JP",
@@ -150,8 +141,8 @@ def image_interduce():
 
     column3 = \
         make_image_carousel_column(
-            image_resource_id=IMAGE_CAROUSEL["resource_id"]["kr"][2],
-            i18n_image_resource_ids=i18n_resource2,
+            image_url=IMAGE_CAROUSEL["resource_url"]["kr"][2],
+            i18n_image_urls=i18n_resource2,
             action=action3)
 
     columns = [column1, column2, column3]
@@ -223,24 +214,40 @@ def sign_out_message():
 
 
 def create_quick_replay_items(confirm_callback, previous_callback):
-    jp_text3 = make_i18n_label("ja_JP", "はい")
-    en_text3 = make_i18n_label("en_US", "yes")
-    kr_text3 = make_i18n_label("ko_KR", "예")
-    display_label = [jp_text3, en_text3, kr_text3]
+    jp_text = make_i18n_label("ja_JP", "はい")
+    en_text = make_i18n_label("en_US", "yes")
+    kr_text = make_i18n_label("ko_KR", "예")
+    display_label = [jp_text, en_text, kr_text]
+
+    display_text_jp = i18n_display_text("ja_JP", "はい")
+    display_text_en = i18n_display_text("en_US", "yes")
+    display_text_kr = i18n_display_text("ko_KR", "예")
+
+    display_label_text = [display_text_jp, display_text_en, display_text_kr]
+
     action1 = make_postback_action(confirm_callback,
                                    label="예",
                                    i18n_labels=display_label,
-                                   display_text="예")
+                                   display_text="예",
+                                   i18n_display_texts=display_label_text)
     reply_item1 = make_quick_reply_item(action1)
 
     jp_text2 = make_i18n_label("ja_JP", "いいえ")
     en_text2 = make_i18n_label("en_US", "No")
     kr_text2 = make_i18n_label("ko_KR", "아니요")
     display_label2 = [jp_text2, en_text2, kr_text2]
+
+    display_text_jp2 = i18n_display_text("ja_JP", "いいえ")
+    display_text_en2 = i18n_display_text("en_US", "No")
+    display_text_kr2 = i18n_display_text("ko_KR", "아니요")
+    display_label_text2 = [display_text_jp2,
+                           display_text_en2,
+                           display_text_kr2]
     action2 = make_postback_action(previous_callback,
                                    label="아니요",
                                    i18n_labels=display_label2,
-                                   display_text="아니요")
+                                   display_text="아니요",
+                                   i18n_display_texts=display_label_text2)
     reply_item2 = make_quick_reply_item(action2)
 
     return [reply_item1, reply_item2]

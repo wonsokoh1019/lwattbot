@@ -6,43 +6,47 @@ constants.py Defining the constant used for a project.
 """
 import os
 from calender.constants.common import *
-from calender.constants.value import *
 # ---------------------------------------------------------------------
 # Constants and global variables
 # ---------------------------------------------------------------------
 
 SERVICE_CONSUMER_KEY = None
 LOCAL = LANG
+HEROKU_SERVER_ID = SERVER_ID
+IP_TOKEN = TOKEN
+PRIVATE_KEY_PATH = ABSDIR_OF_ROOT + "/key/" + PRIVATE_KEY_NAME
 
+# SSL_KEY = ABSDIR_OF_ROOT + "/key/worksmobile_2019_key.pem"
+# SSL_CERT = ABSDIR_OF_ROOT + "/key/worksmobile_2019_nginx_cert.pem"
 RICH_MENUS = {
                 "kr": {
                     "name": "calender_bot_rich_menu_kr",
-                    "resource_id": RICHMENU_KR_RESOURCE
+                    "path": ABSDIR_OF_ROOT + "/image/kr/Rich_Menu.png"
                 },
                 "jp":
                 {
                     "name": "calender_bot_rich_menu_jp",
-                    "resource_id": RICHMENU_JP_RESOURCE
+                    "path": ABSDIR_OF_ROOT + "/image/jp/Rich_Menu.png"
                  },
                 "en":
                 {
                     "name": "calender_bot_rich_menu_en",
-                    "resource_id": RICHMENU_EN_RESOURCE
+                    "path": ABSDIR_OF_ROOT + "/image/en/Rich_Menu.png"
                 }
             }
 
 IMAGE_CAROUSEL = {
-                    "resource_id":
+                    "resource_url":
                     {
-                        "kr": [CAROUSELONE_KR_RESOURCE,
-                               CAROUSELTWO_KR_RESOURCE,
-                               CAROUSELTHREE_KR_RESOURCE],
-                        "en": [CAROUSELONE_EN_RESOURCE,
-                               CAROUSELTWO_EN_RESOURCE,
-                               CAROUSELTHREE_EN_RESOURCE],
-                        "jp": [CAROUSELONE_JP_RESOURCE,
-                               CAROUSELTWO_JP_RESOURCE,
-                               CAROUSELTHREE_JP_RESOURCE]
+                        "kr": [LOCAL_ADDRESS + "static/kr/IMG_Carousel_01.png",
+                               LOCAL_ADDRESS + "static/kr/IMG_Carousel_02.png",
+                               LOCAL_ADDRESS + "static/kr/IMG_Carousel_03.png"],
+                        "en": [LOCAL_ADDRESS + "static/en/IMG_Carousel_01.png",
+                               LOCAL_ADDRESS + "static/en/IMG_Carousel_02.png",
+                               LOCAL_ADDRESS + "static/en/IMG_Carousel_03.png"],
+                        "jp": [LOCAL_ADDRESS + "static/jp/IMG_Carousel_01.png",
+                               LOCAL_ADDRESS + "static/jp/IMG_Carousel_02.png",
+                               LOCAL_ADDRESS + "static/jp/IMG_Carousel_03.png"]
                     }
                 }
 API_BO = {
@@ -50,55 +54,61 @@ API_BO = {
                 "content-type": "application/json",
                 "charset": "UTF-8"
             },
-
-            "url": "https://alpha-apis.worksmobile.com/"
-                   + API_ID + "/message/sendMessage/v2",
-            "upload_url": "http://alpha-storage.worksmobile.com/"
-                          "openapi/message/upload.api",
-            "push_url": "https://alpha-apis.worksmobile.com/r/"
-                        + API_ID + "/message/v1/bot/"
-                        + str(BOT_NO) + "/message/push",
-            "rich_menu_url": "https://alpha-apis.worksmobile.com/r/"
-                             + API_ID + "/message/v1/bot/"
-                             + str(BOT_NO) + "/richmenu",
+            "upload_url": "http://" + STORAGE_DOMAIN
+                          + "/openapi/message/upload.api",
+            "push_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
+                        + API_ID + "/message/v1/bot/_BOT_NO_/message/push",
+            "rich_menu_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
+                             + API_ID + "/message/v1/bot/_BOT_NO_/richmenu",
 
             "calendar":
             {
                 "name": "test_calendar",
                 "test_calender_id": "test calender id",
-                "create_calender_url": "https://alpha-apis.worksmobile.com/"
+                "create_calender_url": "https://" + DEVELOP_API_DOMAIN + "/"
                                        + API_ID + "/calendar/createCalendar",
-                "get_calenders_url": "https://alpha-apis.worksmobile.com/r/"
+                "get_calenders_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
                                      + API_ID
                                      + "/calendar/rest/v1/users/me/"
                                        "calendarList",
-                "create_schedule_url": "https://alpha-apis.worksmobile.com/"
+                "create_schedule_url": "https://" + DEVELOP_API_DOMAIN + "/"
                                        + API_ID + "/calendar/createSchedule",
-                "modify_schedule_url": "https://alpha-apis.worksmobile.com/"
+                "modify_schedule_url": "https://" + DEVELOP_API_DOMAIN + "/"
                                        + API_ID + "/calendar/modifySchedule",
                 "TZone": "Asia/Seoul"
             },
 
             "TZone":
             {
-                "external_key_url": "https://alpha-apis.worksmobile.com/"
+                "external_key_url": "https://" + DEVELOP_API_DOMAIN + "/"
                                     + API_ID
-                                    + "/calendar/contact/getDomainContact/v1",
-                "time_zone_url": "https://sandbox-apis.worksmobile.com/r/"
+                                    + "/calendar/contact/getDomainContact/v1?"
+                                      "account=" + ADMIN_ACCOUNT,
+                "time_zone_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
                                  + API_ID
-                                 + "/organization/v2/domains/"
-                                   "DOMAIN_ID/users/EXTERNAL_KEY/g11ns"
-            }
+                                 + "/organization/v2/domains/DOMAIN_ID"
+                                   "/users/EXTERNAL_KEY/g11ns"
+            },
+            "auth_url": "https://" + AUTH_DOMAIN + "/b/" + API_ID
+                        + "/server/token?grant_type=urn%3Aietf%3Aparams%3Aoauth"
+                          "%3Agrant-type%3Ajwt-bearer&assertion="
         }
 
 OPEN_API = {
         "_info": "nwetest.com",
         "apiId": API_ID,
         "consumerKey": CONSUMER_KEY,
-        "service_consumerKey": SERVICE_CONSUMER_KEY,
-        "botNo": BOT_NO,
-        "token": TOKEN
+        "service_consumerKey": SERVICE_CONSUMER_KEY
     }
+
+DB_CONFIG = {
+    "host": DB_HOST,
+    "port": DB_PORT,
+    "name": DB_NAME,
+    "user": DB_USER,
+    "password": DB_PASSWORD,
+    "ssl": DB_SSLMODE
+}
 
 FILE_SYSTEM = {
     "cache_dir": ABSDIR_OF_ROOT+"/cache",

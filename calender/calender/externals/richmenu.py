@@ -5,30 +5,39 @@ import io
 import logging
 import json
 from calender.externals.data import *
+from calender.common import utils
 from calender.constant import API_BO, OPEN_API, RICH_MENUS
 import tornado.gen
-import requests
+from calender.common.utils import auth_get, auth_post, auth_del
+
 LOGGER = logging.getLogger("calender")
 
 
 def upload_content(file_path):
+    headers = {
+        "consumerKey": OPEN_API["consumerKey"],
+        "x-works-apiid": OPEN_API["apiId"]
+    }
 
-    headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
-    headers["x-works-apiid"] = OPEN_API["apiId"]
-
-    files = {'file': open(file_path, 'rb')}
+    files = {'resourceName': open(file_path, 'rb')}
 
     url = API_BO["upload_url"]
+    url = utils.replace_url_bot_no(url)
+    if url is None:
+        LOGGER.info("user_no is None . url:%s", url)
+        return None
+
     LOGGER.info("upload content . url:%s", url)
 
-    response = requests.post(url, files=files, headers=headers)
+    response = auth_post(url, files=files, headers=headers)
     if response.status_code != 200:
         LOGGER.info("push message failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
         return None
-    LOGGER.info("push message success. url:%s txt:%s body:%s",
-                url, response.text, response.content)
+    if "x-works-resource-id" not in response.headers:
+        LOGGER.error("invalid content. url:%s txt:%s headers:%s",
+                    url, response.text, response.headers)
+        return None
     return response.headers["x-works-resource-id"]
 
 
@@ -97,12 +106,16 @@ def make_add_rich_menu_body(rich_menu_name):
 
     headers = API_BO["headers"]
     headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
 
     url = API_BO["rich_menu_url"]
+    url = utils.replace_url_bot_no(url)
+    if url is None:
+        LOGGER.info("user_no is None . url:%s", url)
+        return None
+
     LOGGER.info("push message . url:%s", url)
 
-    response = requests.post(url, data=json.dumps(rich_menu), headers=headers)
+    response = auth_post(url, data=json.dumps(rich_menu), headers=headers)
     if response.status_code != 200:
         LOGGER.info("push message failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
@@ -119,12 +132,15 @@ def set_rich_menu_image(resource_id, rich_menu_id):
 
     headers = API_BO["headers"]
     headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
 
     url = API_BO["rich_menu_url"] + "/" + rich_menu_id + "/content"
+    url = utils.replace_url_bot_no(url)
+    if url is None:
+        LOGGER.info("user_no is None . url:%s", url)
+        return False
     LOGGER.info("push message . url:%s", url)
 
-    response = requests.post(url, data=json.dumps(body), headers=headers)
+    response = auth_post(url, data=json.dumps(body), headers=headers)
     if response.status_code != 200:
         LOGGER.info("push message failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
@@ -137,11 +153,15 @@ def set_rich_menu_image(resource_id, rich_menu_id):
 def set_user_specific_rich_menu(rich_menu_id, account_id):
     headers = API_BO["headers"]
     headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
     url = API_BO["rich_menu_url"] + "/" \
           + rich_menu_id + "/account/" + account_id
 
-    response = requests.post(url, headers=headers)
+    url = utils.replace_url_bot_no(url)
+    if url is None:
+        LOGGER.info("user_no is None . url:%s", url)
+        return None
+
+    response = auth_post(url, headers=headers)
     if response.status_code != 200:
         LOGGER.info("push message failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
@@ -154,11 +174,14 @@ def set_user_specific_rich_menu(rich_menu_id, account_id):
 def get_rich_menus():
     headers = API_BO["headers"]
     headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
     url = API_BO["rich_menu_url"]
+    url = utils.replace_url_bot_no(url)
+    if url is None:
+        LOGGER.info("user_no is None . url:%s", url)
+        return None
 
     LOGGER.info("push message begin. url:%s", url)
-    response = requests.get(url, headers=headers)
+    response = auth_get(url, headers=headers)
     if response.status_code != 200:
         LOGGER.info("push message failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
@@ -172,11 +195,14 @@ def get_rich_menus():
 def canncel_user_specific_rich_menu(account_id):
     headers = API_BO["headers"]
     headers["consumerKey"] = OPEN_API["consumerKey"]
-    headers["Authorization"] = "Bearer " + OPEN_API["token"]
-    url = API_BO["rich_menu"]["url"] + "/account/" + account_id
+    url = API_BO["rich_menu_url"] + "/account/" + account_id
+    url = utils.replace_url_bot_no(url)
+    if url is None:
+        LOGGER.info("user_no is None . url:%s", url)
+        return False
 
     LOGGER.info("push message begin. url:%s", url)
-    response = requests.delete(url, headers=headers)
+    response = auth_del(url, headers=headers)
     if response.status_code != 200:
         LOGGER.info("push message failed. url:%s text:%s body:%s",
                     url, response.text, response.content)
@@ -196,44 +222,33 @@ def init_rich_menu(local=None):
                 if str(menu["name"]) == RICH_MENUS[local]["name"]:
                     il8n_rich_menu_id[RICH_MENUS[local]["name"]] = \
                         menu["richMenuId"]
-                    continue
-            if str(menu["name"]) == RICH_MENUS["kr"]["name"]:
-                il8n_rich_menu_id[RICH_MENUS["kr"]["name"]] = \
-                    menu["richMenuId"]
-            elif str(menu["name"]) == RICH_MENUS["jp"]["name"]:
-                il8n_rich_menu_id[RICH_MENUS["jp"]["name"]] = \
-                    menu["richMenuId"]
-            elif str(menu["name"]) == RICH_MENUS["en"]["name"]:
-                il8n_rich_menu_id[RICH_MENUS["en"]["name"]] = \
-                    menu["richMenuId"]
+                    break
+            for tmp_local, info in RICH_MENUS.items():
+                if str(menu["name"]) == info["name"]:
+                    il8n_rich_menu_id[info["name"]] = menu["richMenuId"]
+                    return il8n_rich_menu_id
 
     if local in RICH_MENUS \
             and RICH_MENUS[local]["name"] \
             not in il8n_rich_menu_id:
 
         rich_menu_id = make_add_rich_menu_body(RICH_MENUS[local]["name"])
-        if not set_rich_menu_image(RICH_MENUS[local]["resource_id"],
-                                   rich_menu_id):
+
+        resource_id = upload_content(RICH_MENUS[local]["path"])
+        if not set_rich_menu_image(resource_id, rich_menu_id):
             LOGGER.error("set rich menu image failed.")
-        il8n_rich_menu_id[RICH_MENUS[local]["name"]] = rich_menu_id
+        else:
+            il8n_rich_menu_id[RICH_MENUS[local]["name"]] = rich_menu_id
         return il8n_rich_menu_id
 
-    if RICH_MENUS["kr"]["name"] not in il8n_rich_menu_id:
-        rich_menu_id = make_add_rich_menu_body(RICH_MENUS["kr"]["name"])
-        if not set_rich_menu_image(RICH_MENUS["kr"]["resource_id"],
-                                   rich_menu_id):
-            LOGGER.error("set rich menu image failed.")
-        il8n_rich_menu_id[RICH_MENUS["kr"]["name"]] = rich_menu_id
-    if RICH_MENUS["jp"]["name"] not in il8n_rich_menu_id:
-        rich_menu_id = make_add_rich_menu_body(RICH_MENUS["jp"]["name"])
-        if not set_rich_menu_image(RICH_MENUS["jp"]["resource_id"],
-                                   rich_menu_id):
-            LOGGER.error("set rich menu image failed.")
-        il8n_rich_menu_id[RICH_MENUS["jp"]["name"]] = rich_menu_id
-    if RICH_MENUS["en"]["name"] not in il8n_rich_menu_id:
-        rich_menu_id = make_add_rich_menu_body(RICH_MENUS["en"]["name"])
-        if not set_rich_menu_image(RICH_MENUS["en"]["resource_id"],
-                                   rich_menu_id):
-            LOGGER.error("set rich menu image failed.")
-        il8n_rich_menu_id[RICH_MENUS["en"]["name"]] = rich_menu_id
+    for local, info in RICH_MENUS.items():
+        if info["name"] not in il8n_rich_menu_id:
+            rich_menu_id = make_add_rich_menu_body(info["name"])
+
+            resource_id = upload_content(info["path"])
+            if not set_rich_menu_image(resource_id, rich_menu_id):
+                LOGGER.error("set rich menu image failed.")
+            else:
+                il8n_rich_menu_id[info["name"]] = rich_menu_id
+
     return il8n_rich_menu_id
