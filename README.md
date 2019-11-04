@@ -16,7 +16,7 @@
 3. clone this repository
     https://oss.navercorp.com/works-mobile/oneapp_samplebot_calender.git
 
-4. modify calender/constants/common.py
+4. modify conf/config.py
 
 5. sh autoInit.sh [alpha|stage|real] [update|no]
 
