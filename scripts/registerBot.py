@@ -11,7 +11,7 @@ import datetime
 import psycopg2.extras as extras
 from psycopg2.errors import DuplicateTable
 sys.path.append('./')
-from calender.constants.common import *
+from conf.config import *
 
 callback_address = LOCAL_ADDRESS + "callback"
 photo_url = LOCAL_ADDRESS + "static/icon.png"

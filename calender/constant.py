@@ -5,7 +5,7 @@ constants.py Defining the constant used for a project.
 
 """
 import os
-from calender.constants.common import *
+from conf.config import *
 # ---------------------------------------------------------------------
 # Constants and global variables
 # ---------------------------------------------------------------------

@@ -4,7 +4,7 @@
 the global setting for calender
 """
 
-from calender.constants.common import ABSDIR_OF_ROOT
+from conf.config import ABSDIR_OF_ROOT
 
 LOG_PATH = ABSDIR_OF_ROOT + "/logs/"
 CALENDER_LOG_FILE = LOG_PATH + "calender.log"
