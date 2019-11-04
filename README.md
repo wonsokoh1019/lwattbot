@@ -3,7 +3,7 @@
 #### ref: http://www.tornadoweb.org
 ####      https://minzkraut.com/2016/11/23/making-a-simple-spritesheet-generator-in-python
 ### The default deployment path is ~/oneapp_samplebot/calender, and if you want to change the deployment path, please modify the configuration file
-#### nginx.conf setting.py
+#### setting.py
 ### Using the default irteam user to boot by default 
 ### python version 3.6.3
 
