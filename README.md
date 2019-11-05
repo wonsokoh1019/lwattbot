@@ -18,7 +18,7 @@
 
 4. modify conf/config.py
 
-5. sh autoInit.sh [alpha|stage|real] [update|no]
+5. sh autoInit.sh
 
 6. simple running
    python main.py --port=8080 --daemonize True
