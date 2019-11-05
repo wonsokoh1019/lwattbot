@@ -53,7 +53,7 @@ class PostGreSql:
             # Exception occurred, so rollback.
             self.rollback()
             # return False
-            self.close()
+        self.close()
 
     @staticmethod
     def __get_conn():
