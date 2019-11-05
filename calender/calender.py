@@ -15,14 +15,11 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.options import define, options
 from calender.externals.richmenu import *
 from calender.common import globalData
-from calender.externals.data import *
+from calender.model.data import *
 from calender.externals.calenderReq import *
 from calender.constant import API_BO, LOCAL
-# from calender.constant import SSL_CERT, SSL_KEY
-from calender.model.calenderDBHandle import create_calender_table
-from calender.model.initStatusDBHandle import create_init_status, \
-    insert_init_status, get_action_info
-from calender.model.processStatusDBHandle import create_process_status_table
+from calender.model.initStatusDBHandle import insert_init_status, \
+    get_init_status
 
 import psutil
 
@@ -83,14 +80,8 @@ def init_logger():
     logging.getLogger("tornado.general").addHandler(file_handler)
 
 
-def init_db():
-    create_calender_table()
-    create_process_status_table()
-    create_init_status()
-
-
 def check_init_bot():
-    extra = get_action_info("bot_no")
+    extra = get_init_status("bot_no")
     if extra is None:
         return False
     globalData.set_value("bot_no", extra)
@@ -98,7 +89,7 @@ def check_init_bot():
 
 
 def init_rich_menu_first():
-    extra = get_action_info("rich_menu")
+    extra = get_init_status("rich_menu")
 
     if extra is None:
         rich_menus = init_rich_menu(LOCAL)
@@ -114,7 +105,7 @@ def init_rich_menu_first():
 
 
 def init_calender_first():
-    calender_id = get_action_info("calender")
+    calender_id = get_init_status("calender")
     if calender_id is None:
         calender_id = init_calender()
         insert_init_status("calender", calender_id)
@@ -131,18 +122,10 @@ def start_calender():
     """
     server = tornado.httpserver.HTTPServer(calender.router.getRouter())
 
-    """
-    server = tornado.httpserver.HTTPServer(calender.router.getRouter(), ssl_options={
-        "certfile": os.path.join(SSL_CERT),
-        "keyfile": os.path.join(SSL_KEY),
-    })
-    """
-
     server.bind(options.port)
     server.start(1)
 
     init_logger()
-    init_db()
     if check_init_bot():
         try:
             init_rich_menu_first()

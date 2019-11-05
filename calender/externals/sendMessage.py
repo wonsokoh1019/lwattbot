@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import io
 import logging
-from calender.externals.data import *
+import json
 import tornado.gen
 from calender.common.utils import auth_post, replace_url_bot_no
 from tornado.httpclient import AsyncHTTPClient

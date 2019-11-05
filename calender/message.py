@@ -1,7 +1,7 @@
 # !/bin/env python
 # -*- coding: utf-8 -*-
 import time
-from calender.externals.data import *
+from calender.model.data import *
 from calender.constant import API_BO, IMAGE_CAROUSEL, \
     RICH_MENUS, RECEIVE_ACCOUNT
 

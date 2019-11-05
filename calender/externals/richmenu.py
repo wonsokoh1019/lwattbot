@@ -4,7 +4,7 @@
 import io
 import logging
 import json
-from calender.externals.data import *
+from calender.model.data import *
 from calender.common import utils
 from calender.constant import API_BO, OPEN_API, RICH_MENUS
 import tornado.gen
@@ -89,7 +89,7 @@ def make_add_rich_menu_body(rich_menu_name):
     kr_label_text2 = make_i18n_label("ko_KR", "처음으로")
     display_label2 = [jp_label_text2, en_label_text2, kr_label_text2]
 
-    action2 = make_postback_action("to_firt",
+    action2 = make_postback_action("to_first",
                                    display_text="처음으로",
                                    label="처음으로",
                                    i18n_display_texts=display_text2,

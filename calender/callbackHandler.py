@@ -13,7 +13,7 @@ from calender.common import globalData
 from calender.externals.richmenu import *
 from calender.externals.calenderReq import *
 from calender.constant import API_BO, RICH_MENUS, RECEIVE_ACCOUNT, LOCAL
-from calender.externals.data import *
+from calender.model.data import *
 from calender.common import globalData
 from calender.message import *
 from calender.checkParameter import *
@@ -492,11 +492,6 @@ class CallbackHandler(tornado.web.RequestHandler):
     """
     /internal/hello
     """
-    def get(self):
-        """
-        support GET
-        """
-        self.finish()
 
     @tornado.gen.coroutine
     def post(self):

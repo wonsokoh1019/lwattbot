@@ -4,9 +4,9 @@
 the global setting for calender
 """
 
-from conf.config import ABSDIR_OF_ROOT
+from calender.constant import ABSDIR_OF_PARENT
 
-LOG_PATH = ABSDIR_OF_ROOT + "/logs/"
+LOG_PATH = ABSDIR_OF_PARENT + "/logs/"
 CALENDER_LOG_FILE = LOG_PATH + "calender.log"
 CALENDER_LOG_ROTATE = "midnight"
 CALENDER_LOG_FMT = '[%(asctime)-15s] [%(levelname)s] ' \

@@ -79,7 +79,7 @@ class CheckParameter:
             self.cmd = UserCmd.START
         elif content_post_back == "clean" or self.text == "clean":
             self.cmd = UserCmd.CLEAN
-        elif self.post_back == "to_firt" or self.text == "to_firt":
+        elif self.post_back == "to_first" or self.text == "to_first":
             self.cmd = UserCmd.TO_FIRST
         elif self.post_back == "sign_in" or self.text == "sign_in":
             self.cmd = UserCmd.SIGN_IN

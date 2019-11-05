@@ -10,31 +10,40 @@ from conf.config import *
 # Constants and global variables
 # ---------------------------------------------------------------------
 
+# root path
+ABSDIR_OF_SELF = os.path.dirname(os.path.abspath(__file__))
+ABSDIR_OF_PARENT = os.path.dirname(ABSDIR_OF_SELF)
+
 SERVICE_CONSUMER_KEY = None
 LOCAL = LANG
 HEROKU_SERVER_ID = SERVER_ID
 IP_TOKEN = TOKEN
-PRIVATE_KEY_PATH = ABSDIR_OF_ROOT + "/key/" + PRIVATE_KEY_NAME
+PRIVATE_KEY_PATH = ABSDIR_OF_PARENT + "/key/" + PRIVATE_KEY_NAME
 
-# SSL_KEY = ABSDIR_OF_ROOT + "/key/worksmobile_2019_key.pem"
-# SSL_CERT = ABSDIR_OF_ROOT + "/key/worksmobile_2019_nginx_cert.pem"
+# domain
+STORAGE_DOMAIN = "alpha-storage.worksmobile.com"
+AUTH_DOMAIN = "alpha-auth.worksmobile.com"
+DEVELOP_API_DOMAIN = "alpha-apis.worksmobile.com"
+
+# RICH_MENUS
 RICH_MENUS = {
                 "kr": {
                     "name": "calender_bot_rich_menu_kr",
-                    "path": ABSDIR_OF_ROOT + "/image/kr/Rich_Menu.png"
+                    "path": ABSDIR_OF_PARENT + "/image/kr/Rich_Menu.png"
                 },
                 "jp":
                 {
                     "name": "calender_bot_rich_menu_jp",
-                    "path": ABSDIR_OF_ROOT + "/image/jp/Rich_Menu.png"
+                    "path": ABSDIR_OF_PARENT + "/image/jp/Rich_Menu.png"
                  },
                 "en":
                 {
                     "name": "calender_bot_rich_menu_en",
-                    "path": ABSDIR_OF_ROOT + "/image/en/Rich_Menu.png"
+                    "path": ABSDIR_OF_PARENT + "/image/en/Rich_Menu.png"
                 }
             }
 
+# IMAGE CAROUSEL
 IMAGE_CAROUSEL = {
                     "resource_url":
                     {
@@ -49,6 +58,8 @@ IMAGE_CAROUSEL = {
                                LOCAL_ADDRESS + "static/jp/IMG_Carousel_03.png"]
                     }
                 }
+
+# API
 API_BO = {
             "headers": {
                 "content-type": "application/json",
@@ -101,6 +112,7 @@ OPEN_API = {
         "service_consumerKey": SERVICE_CONSUMER_KEY
     }
 
+# DB
 DB_CONFIG = {
     "host": DB_HOST,
     "port": DB_PORT,
@@ -110,7 +122,7 @@ DB_CONFIG = {
     "ssl": DB_SSLMODE
 }
 
+# FILE SYSTEM
 FILE_SYSTEM = {
-    "cache_dir": ABSDIR_OF_ROOT+"/cache",
-    "image_dir": ABSDIR_OF_ROOT+"/image",
+    "image_dir": ABSDIR_OF_PARENT+"/image",
 }

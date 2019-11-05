@@ -1,3 +1,6 @@
+#!/bin/env python
+# -*- coding: utf-8 -*-
+
 import psycopg2
 import psycopg2.extras as extras
 from psycopg2.errors import DuplicateTable
@@ -8,10 +11,49 @@ from calender.constant import DB_CONFIG
 
 class PostGreSql:
     __pool = None
+    _conn = None
+    _cursor = None
 
     def __init__(self):
-        self.conn = PostGreSql.__get_conn()
-        self.cursor = self.conn.cursor()
+        return
+
+    def cursor(self):
+        self._conn = PostGreSql.__get_conn()
+        self._cursor = self._conn.cursor()
+        return self._cursor
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
+
+    def execute(self, sql):
+        self._cursor.execute(sql)
+
+    def fetchall(self):
+        return self._cursor.fetchall()
+
+    def fetchone(self):
+        return self._cursor.fetchone()
+
+    def close(self):
+        self._conn.close()
+        self._cursor.close()
+
+    def __enter__(self):
+        # Code to start a new transaction
+        return self.cursor()
+
+    def __exit__(self, type, value, tb):
+        if tb is None:
+            # No exception, so commit
+            self.commit()
+        else:
+            # Exception occurred, so rollback.
+            self.rollback()
+            # return False
+            self.close()
 
     @staticmethod
     def __get_conn():
@@ -24,7 +66,3 @@ class PostGreSql:
                               database=DB_CONFIG["name"],
                               sslmode=DB_CONFIG["ssl"])
         return __pool.connection()
-
-    def close(self):
-        self.cursor.close()
-        self.conn.close()

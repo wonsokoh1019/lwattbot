@@ -8,45 +8,6 @@ from psycopg2.errors import DuplicateTable, DuplicateObject
 LOGGER = logging.getLogger("calender")
 
 
-# create status tables
-def create_process_status_table():
-    status_type_sql = "CREATE TYPE m_status AS " \
-                      "ENUM('none', 'wait_in', " \
-                      "'in_done', 'wait_out', 'out_done');"
-
-    process_type_sql = "CREATE TYPE m_process AS " \
-                       "ENUM('none', 'sign_in_done', 'sign_out_done');"
-
-    create_sql = "CREATE TABLE IF NOT EXISTS bot_process_status(" \
-                 "account      varchar(64)   NOT NULL, " \
-                 "cur_date     date          NOT NULL, " \
-                 "status       m_status      DEFAULT NULL, " \
-                 "process      m_process     DEFAULT NULL, " \
-                 "create_time  timestamp     NOT NULL " \
-                 "default current_timestamp, " \
-                 "update_time  timestamp         NOT NULL " \
-                 "default current_timestamp, " \
-                 "PRIMARY KEY (account, cur_date)" \
-                 ");"
-
-    post_gre = PostGreSql()
-
-    try:
-        post_gre.cursor.execute(status_type_sql)
-        post_gre.cursor.execute(process_type_sql)
-        post_gre.cursor.execute(create_sql)
-        post_gre.conn.commit()
-    except DuplicateObject as ex:
-        LOGGER.info("type's has created. %s", str(ex))
-        post_gre.conn.rollback()
-    except DuplicateTable as ex:
-        LOGGER.info("table's has created. %s", str(ex))
-        post_gre.conn.rollback()
-    finally:
-        post_gre.close()
-    return True
-
-
 def insert_replace_status_by_user_date(account, date, status, process=None):
     if status is None:
         return False
@@ -65,12 +26,8 @@ def insert_replace_status_by_user_date(account, date, status, process=None):
                      (account, date, status, process, status, process)
 
     post_gre = PostGreSql()
-
-    try:
-        post_gre.cursor.execute(insert_sql)
-        post_gre.conn.commit()
-    finally:
-        post_gre.close()
+    with post_gre as cursor:
+        cursor.execute(insert_sql)
 
 
 def set_status_by_user_date(account, date, status=None, process=None):
@@ -86,11 +43,8 @@ def set_status_by_user_date(account, date, status=None, process=None):
     update_sql = "%s %s" % (update_sql, condition,)
 
     post_gre = PostGreSql()
-    try:
-        post_gre.cursor.execute(update_sql)
-        post_gre.conn.commit()
-    finally:
-        post_gre.close()
+    with post_gre as cursor:
+        cursor.execute(update_sql)
 
 
 def get_status_by_user(account, date):
@@ -100,18 +54,14 @@ def get_status_by_user(account, date):
                  "WHERE account='%s' and cur_date='%s'" \
                  % (account, date)
 
-    post_gre = PostGreSql()
-
     row = None
-    try:
-        post_gre.cursor.execute(select_sql)
-        rows = post_gre.cursor.fetchall()
+    post_gre = PostGreSql()
+    with post_gre as cursor:
+        cursor.execute(select_sql)
+        rows = cursor.fetchall()
         if rows is not None and len(rows) == 1:
             # ['status', 'process']
             row = rows[0]
-    finally:
-        post_gre.close()
-
     return row
 
 
@@ -122,11 +72,8 @@ def delete_status_by_user_date(account, date):
                         (account, date)
 
     post_gre = PostGreSql()
-    try:
-        post_gre.cursor.execute(delete_status_sql)
-        post_gre.conn.commit()
-    finally:
-        post_gre.close()
+    with post_gre as cursor:
+        cursor.execute(delete_status_sql)
 
 
 def clean_status_by_user(account, date):
@@ -134,8 +81,5 @@ def clean_status_by_user(account, date):
                  "WHERE account='%s' and cur_date='%s' " % (account, date)
 
     post_gre = PostGreSql()
-    try:
-        post_gre.cursor.execute(delete_sql)
-        post_gre.conn.commit()
-    finally:
-        post_gre.close()
+    with post_gre as cursor:
+        cursor.execute(delete_sql)

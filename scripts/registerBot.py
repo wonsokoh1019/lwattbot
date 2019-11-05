@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import json
-import argparse
 import psycopg2
 import requests
 import python_jwt as jwt
@@ -11,14 +10,13 @@ import datetime
 import psycopg2.extras as extras
 from psycopg2.errors import DuplicateTable
 sys.path.append('./')
+from calender.constant import PRIVATE_KEY_PATH, DEVELOP_API_DOMAIN, API_BO
 from conf.config import *
 
 callback_address = LOCAL_ADDRESS + "callback"
 photo_url = LOCAL_ADDRESS + "static/icon.png"
-key_path = ABSDIR_OF_ROOT + "/key/private_20191017164308.key"
-auth_url = "https://" + AUTH_DOMAIN + "/b/" + API_ID \
-           + "/server/token?grant_type=urn%3Aietf%3Aparams" \
-             "%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion="
+key_path = PRIVATE_KEY_PATH
+auth_url = API_BO["auth_url"]
 
 def create_tmp_token():
     with open(key_path, "rb") as _file:
@@ -163,45 +161,21 @@ def check_bot_in_db():
 
 def add_bot_in_db(bot_no):
 
-    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
-                            password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
-    cur = conn.cursor()
-    create_sql = "CREATE TABLE IF NOT EXISTS system_init_status(" \
-                 "action       varchar(64)   NOT NULL, " \
-                 "extra      varchar(128)     DEFAULT NULL, " \
-                 "create_time  TIMESTAMP     NOT NULL " \
-                 "DEFAULT      CURRENT_TIMESTAMP, " \
-                 "update_time  TIMESTAMP         NOT NULL " \
-                 "default      CURRENT_TIMESTAMP, " \
-                 "PRIMARY KEY (action)" \
-                 ");"
-
     insert_sql = "INSERT INTO system_init_status(action, extra) " \
                  "VALUES('%s', '%s') ON CONFLICT(action) " \
                  "DO UPDATE SET extra='%s', update_time=now()" % \
                  ("bot_no", str(bot_no), str(bot_no))
+
+    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
+                            password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
+    cur = conn.cursor()
     with conn:
         with cur:
-            try:
-                cur.execute(create_sql)
-            except DuplicateTable as ex:
-                conn.rollback()
-                print ("table's has created. %s" % (str(ex),))
-            except Exception as ex:
-                print ("table's created failed. %s" % (str(ex),))
-                return False
             cur.execute(insert_sql)
 
     return True
 
 def main():
-    parser = argparse.ArgumentParser(description="Batch Register")
-    parser.add_argument('-e', '--env', default='alpha')
-    parser.add_argument('-u', '--update', default='none')
-    args = parser.parse_args()
-
-    print(args)
-
     bot_no = check_bot_in_db()
     if bot_no is not None:
         print("bot no has created. bot_no:%s" % (bot_no,))
@@ -211,7 +185,8 @@ def main():
     add_domain(bot_no)
     print("photo:%s" % (photo_url,))
     print("callback:%s" % (callback_address,))
-    add_bot_in_db(bot_no)
+    if bot_no is not None:
+        add_bot_in_db(bot_no)
 
 
 if __name__ == "__main__":
