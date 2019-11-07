@@ -5,8 +5,8 @@ the url to handler route
 """
 import tornado.web
 from calender.callbackHandler import CallbackHandler
-from calender.StaticImageHandler import StaticImageHandler
 from calender.hellohandler import HelloHandler
+from calender.constant import FILE_SYSTEM
 
 
 def getRouter():
@@ -15,6 +15,8 @@ def getRouter():
     """
     return tornado.web.Application([
         (r"/callback", CallbackHandler),
-        (r'/static/[^# ]*', StaticImageHandler),
+        (r'/static/([a-zA-Z0-9\&%_\./-~-]*.(png|PNG))',
+            tornado.web.StaticFileHandler, 
+            {"path": FILE_SYSTEM["image_dir"]}),
         (r'/hello', HelloHandler),
     ])

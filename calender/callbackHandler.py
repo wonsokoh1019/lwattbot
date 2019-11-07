@@ -6,7 +6,7 @@ internal hello
 import json
 import logging
 import tornado.web
-from calender.CheckAndHandleActions import *
+from calender.checkAndHandleActions import *
 
 LOGGER = logging.getLogger("calender")
 
