@@ -158,8 +158,8 @@ def set_user_specific_rich_menu(rich_menu_id, account_id):
 
     url = utils.replace_url_bot_no(url)
     if url is None:
-        LOGGER.info("user_no is None . url:%s", url)
-        return None
+        LOGGER.info("url is None . url:%s", url)
+        return False, "url is None"
 
     response = auth_post(url, headers=headers)
     if response.status_code != 200:
