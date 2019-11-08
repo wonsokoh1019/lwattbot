@@ -43,7 +43,5 @@ def manual_sign_out_content(account_id, current_date):
 @tornado.gen.coroutine
 def manual_sign_out(account_id, current_date, _, __):
     contents = yield manual_sign_out_content(account_id, current_date)
-    if contents is None:
-        return False, "manual sign out. content is None"
-    success_code, error_message = yield push_messages(account_id, contents)
-    return success_code, error_message
+
+    yield push_messages(account_id, contents)

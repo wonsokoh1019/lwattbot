@@ -27,5 +27,4 @@ def to_first_content():
 @tornado.gen.coroutine
 def to_first(account_id, _, __, ___):
     content = to_first_content()
-    success_code, error_message = yield push_message(account_id, content)
-    return success_code, error_message
+    yield push_message(account_id, content)

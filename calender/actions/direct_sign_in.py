@@ -105,7 +105,5 @@ def deal_sign_in(account_id, current_date, sign_time, manual_flag=False):
 @tornado.gen.coroutine
 def direct_sign_in(account_id, current_date, sign_time, _):
     content = yield deal_sign_in(account_id, current_date, sign_time)
-    if content is None:
-        return False, "direct sign in. content is None"
-    success_code, error_message = yield push_message(account_id, content)
-    return success_code, error_message
+
+    yield push_message(account_id, content)

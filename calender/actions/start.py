@@ -150,23 +150,23 @@ def sign(account_id):
     rich_menu_id = get_value(RICH_MENUS[LOCAL]["name"], None)
     if rich_menu_id is None:
         LOGGER.error("get rich_menu_id failed.")
-        return False, "get rich_menu_id failed."
+        raise Exception("get rich_menu_id failed.")
 
     return set_user_specific_rich_menu(rich_menu_id, account_id)
 
 
 @tornado.gen.coroutine
 def start_content(account_id):
-    success_code, error_message = yield sign(account_id)
-    if not success_code:
-        raise tornado.web.HTTPError(500, error_message)
+    yield sign(account_id)
+
     content1 = first_message()
     content2 = image_introduce()
+
     return [content1, content2]
 
 
 @tornado.gen.coroutine
 def start(account_id, _, __, ___):
     contents = yield start_content(account_id)
-    success_code, error_message = yield push_messages(account_id, contents)
-    return success_code, error_message
+
+    yield push_messages(account_id, contents)

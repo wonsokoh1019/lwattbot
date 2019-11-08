@@ -33,11 +33,4 @@ class CallbackHandler(tornado.web.RequestHandler):
         checker = CheckAndHandleActions()
         yield checker.execute(body)
 
-        LOGGER.info("request para code:%d message:%s", checker.code, checker.message)
-        if checker.code is None:
-            raise tornado.web.HTTPError(403, checker.message)
-
-        if not checker.code:
-            raise tornado.web.HTTPError(500, checker.message)
-
         self.finish()

@@ -7,6 +7,7 @@ from calender.model.data import make_i18n_label, make_message_action, \
     make_quick_reply_item, i18n_text, make_text
 from calender.constant import API_BO, IMAGE_CAROUSEL, \
     RICH_MENUS, RECEIVE_ACCOUNT
+from calender.common.local_timezone import local_date_time
 
 LOGGER = logging.getLogger("calender")
 
@@ -25,25 +26,25 @@ en_month = ["January", "February", "March", "April", "May", "June", "July",
 
 class TimeStruct:
     def __init__(self, sign_time):
-        local_time = time.localtime(sign_time)
-        self.week_date_jp = jp_week[local_time.tm_wday]
-        self.week_date_kr = kr_week[local_time.tm_wday]
-        self.week_date_en = en_week[local_time.tm_wday]
+        date_time = local_date_time(sign_time)
+        self.week_date_jp = jp_week[date_time.weekday()]
+        self.week_date_kr = kr_week[date_time.weekday()]
+        self.week_date_en = en_week[date_time.weekday()]
 
-        self.month = str(local_time.tm_mon)
-        self.date = str(local_time.tm_mday)
-        self.min = str(local_time.tm_min)
+        self.month = str(date_time.month)
+        self.date = str(date_time.day)
+        self.min = str(date_time.minute)
 
         self.interval_jp = "午前"
         self.interval_en = "AM"
         self.interval_kr = "오전"
 
-        self.hours = str(local_time.tm_hour)
-        if local_time.tm_hour > 12:
+        self.hours = str(date_time.hour)
+        if date_time.hour > 12:
             self.interval_jp = "午後"
             self.interval_en = "PM"
             self.interval_kr = "오후"
-            self.hours = str(local_time.tm_hour - 12)
+            self.hours = str(date_time.hour - 12)
 
         self.str_current_time_tick = str(sign_time)
         pos = self.str_current_time_tick.find(".")

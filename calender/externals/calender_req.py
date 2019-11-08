@@ -7,7 +7,6 @@ from calender.common.utils import auth_get, auth_post
 from calender.constant import API_BO, OPEN_API, ADMIN_ACCOUNT, DOMAIN_ID
 import tornado.gen
 import uuid
-import pytz
 
 LOGGER = logging.getLogger("calender")
 
@@ -23,16 +22,18 @@ def get_time_zone():
     response = auth_post(external_key_url, headers=headers)
     if response.status_code != 200 or response.content is None:
         LOGGER.info("get external key failed. url:%s text:%s body:%s",
-                    url, response.text, response.content)
+                    external_key_url, response.text, response.content)
         return None
     tmp_req = json.loads(response.content)
-
-    external_key = tmp_req.get("externalKey", None)
+    data = tmp_req.get("data", None)
+    if data is None:
+        return None
+    external_key = data.get("externalKey", None)
     if external_key is None:
         return None
 
     time_zone_url = API_BO["TZone"]["time_zone_url"]
-    time_zone_url = time_zone_url.replace("DOMAIN_ID", DOMAIN_ID)
+    time_zone_url = time_zone_url.replace("DOMAIN_ID", str(DOMAIN_ID))
     time_zone_url = time_zone_url.replace("EXTERNAL_KEY", external_key)
 
     headers["content-type"] = "application/json"
@@ -45,14 +46,6 @@ def get_time_zone():
     tmp_req = json.loads(response.content)
     time_zone = tmp_req.get("timeZone", None)
     return time_zone
-
-
-def get_offset_by_timezone(time_zone):
-    offset = datetime.datetime.now(pytz.timezone(time_zone)).\
-        utcoffset().total_seconds()
-    offset_hour = offset / 3600
-    offset_min = (offset % 3600)/60
-    return offset_hour, offset_min
 
 
 def create_headers():

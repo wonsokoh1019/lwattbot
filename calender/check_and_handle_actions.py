@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 import time
 import logging
-import tornado.web
+import tornado.gen
+from datetime import datetime
+from tornado.web import HTTPError
+from calender.common.local_timezone import local_date_time
 from calender.actions.start import start
 from calender.actions.to_first import to_first
 from calender.actions.sign_in import sign_in
@@ -31,8 +34,6 @@ class CheckAndHandleActions:
     __text = ""
     __post_back = ""
     __account_id = None
-    code = None
-    message = None
     __create_time = None
     __current_date = None
     __content_type = ""
@@ -42,25 +43,22 @@ class CheckAndHandleActions:
 
     def __init__(self):
         self.__create_time = time.time()
-        self.__current_date = time.strftime("%Y-%m-%d",
-                                            time.localtime(self.__create_time))
+        date_time = local_date_time(self.__create_time)
+        self.__current_date = datetime.strftime(date_time, '%Y-%m-%d')
 
     @tornado.gen.coroutine
     def execute(self, body):
 
         if body is None or "source" not in body or "accountId" \
                 not in body["source"]:
-            self.message = "can't find \"accountId\" field."
-            return
+            raise HTTPError(403, "can't find 'accountId' field.")
         if "type" not in body:
-            self.message = "can't find \"type\" field."
-            return
+            raise HTTPError(403, "can't find 'type' field.")
 
         self.__account_id = body["source"].get("accountId", None)
 
         if self.__account_id is None:
-            self.message = "\"accountId\" is None."
-            return
+            raise HTTPError(403, "'accountId' is None.")
 
         type = body.get("type", "")
         
@@ -120,10 +118,10 @@ class CheckAndHandleActions:
             self.__handle = confirm_out
 
         if self.__handle is not None:
-            self.code, self.message = yield self.__handle(self.__account_id,
-                                                          self.__current_date,
-                                                          self.__create_time,
-                                                          self.__user_message)
+            yield self.__handle(self.__account_id,
+                                self.__current_date,
+                                self.__create_time,
+                                self.__user_message)
         else:
-            self.error_message = "Error \"callback\" type."
+            raise HTTPError(400, "Error 'callback' type.")
         return

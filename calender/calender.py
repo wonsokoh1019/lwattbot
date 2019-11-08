@@ -83,9 +83,8 @@ def init_logger():
 def check_init_bot():
     extra = get_init_status("bot_no")
     if extra is None:
-        return False
+        raise Exception("bot no init failed.")
     global_data.set_value("bot_no", extra)
-    return True
 
 
 def init_rich_menu_first():
@@ -126,12 +125,9 @@ def start_calender():
     server.start(1)
 
     init_logger()
-    if check_init_bot():
-        try:
-            init_rich_menu_first()
-            # init_calender_first()
-        except Exception as ex:
-            print("init failed %s" % (str(ex),))
+    check_init_bot()
+    init_rich_menu_first()
+    # todo init_calender_first()
 
     asyncio.get_event_loop().run_forever()
     server.stop()

@@ -46,7 +46,5 @@ def sign_in_content(account_id, current_date):
 @tornado.gen.coroutine
 def sign_in(account_id, current_date, _, __):
     content = yield sign_in_content(account_id, current_date)
-    if content is None:
-        return False, "sign in failed. content is None"
-    success_code, error_message = yield push_message(account_id, content)
-    return success_code, error_message
+
+    yield push_message(account_id, content)

@@ -93,7 +93,7 @@ API_BO = {
             {
                 "external_key_url": "https://" + DEVELOP_API_DOMAIN + "/"
                                     + API_ID
-                                    + "/calendar/contact/getDomainContact/v1?"
+                                    + "/contact/getDomainContact/v1?"
                                       "account=" + ADMIN_ACCOUNT,
                 "time_zone_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
                                  + API_ID

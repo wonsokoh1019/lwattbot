@@ -4,7 +4,10 @@ import tornado.gen
 import asyncio
 import time
 import logging
+from datetime import datetime
+from tornado.web import HTTPError
 from calender.common import global_data
+from calender.common.local_timezone import local_date_time
 from calender.model.data import i18n_text, make_text
 from calender.externals.send_message import push_messages
 from calender.actions.message import invalid_message, prompt_input, \
@@ -60,44 +63,17 @@ def deal_confirm_out(account_id, callback):
     str_time = callback[pos+5:]
     my_time = int(str_time)
 
-    local_time = time.localtime(my_time)
-    current_date = time.strftime("%Y-%m-%d", local_time)
-
-    # local_time_s = time.strftime("%Y-%m-%d %H:%M:%S",
-    #                              time.localtime(my_time))
-    """
-    current_date = time.strftime("%Y-%m-%d", local_time)
-
-    calender_id = global_data.get_value(API_BO["calendar"]["name"])
-    if calender_id is None:
-        calender_id = get_calender_id()
-        if calender_id is None:
-            LOGGER.info("calender_id is None account_id:%s, "
-                        "room_id:%s", str(account_id))
-            return False, "calender_id is None."
-    """
+    date_time = local_date_time(my_time)
+    current_date = datetime.strftime(date_time, '%Y-%m-%d')
 
     info = get_schedule_by_user(account_id, current_date)
     if info is None:
-        return None, False
+        raise HTTPError(500, "Internal data error")
     schedule_id = info[0]
     begin_time = info[1]
-    """
-        if not modify_schedules(calendar_id, begin_time, my_time, my_time):
-            LOGGER.info("modify_schedules failed account_id:%s",
-                        str(account_id))
-        if schedule_id is None:
-            LOGGER.info("schedule_id is None account_id:%s",
-                        str(account_id))
-            return None, False
-        modify_schedule_by_user(schedule_id, my_time)
-    else:
-        LOGGER.info("schedules has exist. account_id:%s, room_id:%s",
-                    str(account_id))
-        return None, False
-    """
+
+    # todo deal calender api logic
     modify_schedule_by_user(schedule_id, my_time)
-    LOGGER.info("schedule_id is None account_id:%s", str(account_id))
 
     if my_time < begin_time:
         yield asyncio.sleep(1)
@@ -106,26 +82,17 @@ def deal_confirm_out(account_id, callback):
 
     hours = int((my_time - begin_time)/3600)
     min = int(((my_time - begin_time) % 3600)/60)
-    # text = confirm_out_send_to_admin_message(account_id,
-    #                                         local_time_s, hours, min)
-    # yield send_to_admin(text)
 
     return [confirm_out_message(my_time, hours, min)], True
 
 
 @tornado.gen.coroutine
 def confirm_out(account_id, current_date, _, callback):
-    contents, success = yield deal_confirm_out(account_id, callback)
-    if contents is None:
-        return False, "confirm out failed. contents is None"
 
-    success_code, error_message = yield push_messages(account_id, contents)
-    if not success_code:
-        LOGGER.info("yield confirm_out failed. room_id:%s account_id:%s",
-                    str(room_id), str(account_id))
-        return success_code, error_message
+    contents, success = yield deal_confirm_out(account_id, callback)
+
+    yield push_messages(account_id, contents)
 
     if success:
         set_status_by_user_date(account_id, current_date,
                                 status="out_done", process="sign_out_done")
-    return True, None
