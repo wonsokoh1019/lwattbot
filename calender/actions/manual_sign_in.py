@@ -3,8 +3,8 @@
 import tornado.web
 import asyncio
 import logging
-from calender.model.data import *
-from calender.externals.sendMessage import push_messages
+from calender.model.data import i18n_text, make_text
+from calender.externals.send_message import push_messages
 from calender.actions.message import invalid_message, prompt_input
 from calender.model.processStatusDBHandle import get_status_by_user, \
     insert_replace_status_by_user_date
@@ -41,7 +41,7 @@ def manual_sign_in_content(account_id, current_date):
 
 
 @tornado.gen.coroutine
-def manual_sign_in(account_id, current_date):
+def manual_sign_in(account_id, current_date, _, __):
     contents = yield manual_sign_in_content(account_id, current_date)
     if contents is None:
         return False, "manual sign in. content is None"

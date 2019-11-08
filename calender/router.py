@@ -15,7 +15,7 @@ def getRouter():
     """
     return tornado.web.Application([
         (r"/callback", CallbackHandler),
-        (r'/static/([a-zA-Z0-9\&%_\./-~-]*.(png|PNG))',
+        (r'/static/([a-zA-Z0-9\&%_\./-~-]*.([p|P][n|N][g|G]))',
             tornado.web.StaticFileHandler, 
             {"path": FILE_SYSTEM["image_dir"]}),
         (r'/hello', HelloHandler),

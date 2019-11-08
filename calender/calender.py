@@ -8,15 +8,15 @@ import logging
 import logging.handlers
 import asyncio
 import uvloop
+import json
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
 from tornado.httpclient import AsyncHTTPClient
 from tornado.options import define, options
-from calender.externals.richmenu import *
-from calender.common import globalData
-from calender.model.data import *
-from calender.externals.calenderReq import *
+from calender.externals.richmenu import init_rich_menu
+from calender.common import global_data
+from calender.externals.calender_req import init_calender
 from calender.constant import API_BO, LOCAL
 from calender.model.initStatusDBHandle import insert_init_status, \
     get_init_status
@@ -84,7 +84,7 @@ def check_init_bot():
     extra = get_init_status("bot_no")
     if extra is None:
         return False
-    globalData.set_value("bot_no", extra)
+    global_data.set_value("bot_no", extra)
     return True
 
 
@@ -101,7 +101,7 @@ def init_rich_menu_first():
         raise Exception("init rich menu failed.")
     else:
         for key in rich_menus:
-            globalData.set_value(key, rich_menus[key])
+            global_data.set_value(key, rich_menus[key])
 
 
 def init_calender_first():
@@ -113,7 +113,7 @@ def init_calender_first():
     if calender_id is None:
         raise Exception("init calender failed.")
     else:
-        globalData.set_value(API_BO["calendar"]["name"], calender_id)
+        global_data.set_value(API_BO["calendar"]["name"], calender_id)
 
 
 def start_calender():

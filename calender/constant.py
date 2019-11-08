@@ -116,10 +116,10 @@ OPEN_API = {
 DB_CONFIG = {
     "host": DB_HOST,
     "port": DB_PORT,
-    "name": DB_NAME,
+    "dbname": DB_NAME,
     "user": DB_USER,
     "password": DB_PASSWORD,
-    "ssl": DB_SSLMODE
+    "sslmode": DB_SSLMODE
 }
 
 # FILE SYSTEM

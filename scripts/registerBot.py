@@ -10,16 +10,18 @@ import datetime
 import psycopg2.extras as extras
 from psycopg2.errors import DuplicateTable
 sys.path.append('./')
-from calender.constant import PRIVATE_KEY_PATH, DEVELOP_API_DOMAIN, API_BO
-from conf.config import *
+from calender.constant import PRIVATE_KEY_PATH, DEVELOP_API_DOMAIN,\
+    API_BO, DB_CONFIG
+from conf.config import API_ID, DOMAIN_ID, ADMIN_ACCOUNT, LOCAL_ADDRESS, \
+    SERVER_ID, TOKEN, CONSUMER_KEY
 
-callback_address = LOCAL_ADDRESS + "callback"
-photo_url = LOCAL_ADDRESS + "static/icon.png"
-key_path = PRIVATE_KEY_PATH
+CALLBACK_ADDRESS = LOCAL_ADDRESS + "callback"
+PHOTO_URL = LOCAL_ADDRESS + "static/icon.png"
+
 auth_url = API_BO["auth_url"]
 
 def create_tmp_token():
-    with open(key_path, "rb") as _file:
+    with open(PRIVATE_KEY_PATH, "rb") as _file:
         key = _file.read()
         private_key = jwk.JWK.from_pem(key)
         payload = {"iss": SERVER_ID}
@@ -53,7 +55,7 @@ def headers():
     if TOKEN is None and SERVER_ID is None:
         raise Exception("token and server id is valid.")
     token = TOKEN
-    if TOKEN is None:
+    if token is None:
         token = generate_token()
     my_headers = {
         "consumerKey": CONSUMER_KEY,
@@ -117,7 +119,7 @@ def create_bot(photo_address):
         "useGroupJoin": False,
         "useDomainScope": False,
         "useCallback": True,
-        "callbackUrl": callback_address,
+        "callbackUrl": CALLBACK_ADDRESS,
         "callbackEvents": ["text", "location", "sticker", "image"]
     }
 
@@ -139,15 +141,9 @@ def add_domain(bot_no):
     print(r.json())
 
 def check_bot_in_db():
-
-    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
-                            password=DB_PASSWORD, host=DB_HOST,
-                            port=DB_PORT, sslmode=DB_SSLMODE)
-    cur = conn.cursor()
-
     select_sql = "SELECT extra FROM system_init_status WHERE action='bot_no'"
-    with conn:
-        with cur:
+    with psycopg2.connect(**DB_CONFIG) as conn:
+        with conn.cursor() as cur:
             try:
                 cur.execute(select_sql)
                 rows = cur.fetchall()
@@ -166,11 +162,8 @@ def add_bot_in_db(bot_no):
                  "DO UPDATE SET extra='%s', update_time=now()" % \
                  ("bot_no", str(bot_no), str(bot_no))
 
-    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
-                            password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
-    cur = conn.cursor()
-    with conn:
-        with cur:
+    with psycopg2.connect(**DB_CONFIG) as conn:
+        with conn.cursor() as cur:
             cur.execute(insert_sql)
 
     return True
@@ -181,10 +174,10 @@ def main():
         print("bot no has created. bot_no:%s" % (bot_no,))
         return
 
-    bot_no = create_bot(photo_url)
+    bot_no = create_bot(PHOTO_URL)
     add_domain(bot_no)
-    print("photo:%s" % (photo_url,))
-    print("callback:%s" % (callback_address,))
+    print("photo:%s" % (PHOTO_URL,))
+    print("callback:%s" % (CALLBACK_ADDRESS,))
     if bot_no is not None:
         add_bot_in_db(bot_no)
 

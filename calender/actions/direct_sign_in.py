@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import tornado.web
 import logging
-from calender.model.data import *
-from calender.externals.sendMessage import push_message
+from calender.model.data import i18n_text, make_text, make_quick_reply
+from calender.externals.send_message import push_message
 from calender.actions.message import invalid_message, TimeStruct, \
     create_quick_replay_items
 from calender.model.processStatusDBHandle import get_status_by_user
@@ -103,7 +103,7 @@ def deal_sign_in(account_id, current_date, sign_time, manual_flag=False):
 
 
 @tornado.gen.coroutine
-def direct_sign_in(account_id, current_date, sign_time):
+def direct_sign_in(account_id, current_date, sign_time, _):
     content = yield deal_sign_in(account_id, current_date, sign_time)
     if content is None:
         return False, "direct sign in. content is None"

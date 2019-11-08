@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import tornado.web
 import logging
-from calender.model.data import *
-from calender.externals.sendMessage import push_message
+from calender.model.data import i18n_text, make_text
+from calender.externals.send_message import push_message
 
 LOGGER = logging.getLogger("calender")
 
@@ -25,7 +25,7 @@ def to_first_content():
 
 
 @tornado.gen.coroutine
-def to_first(account_id):
+def to_first(account_id, _, __, ___):
     content = to_first_content()
     success_code, error_message = yield push_message(account_id, content)
     return success_code, error_message

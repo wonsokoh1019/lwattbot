@@ -63,6 +63,6 @@ class PostGreSql:
                               port=DB_CONFIG["port"],
                               user=DB_CONFIG["user"],
                               password=DB_CONFIG["password"],
-                              database=DB_CONFIG["name"],
-                              sslmode=DB_CONFIG["ssl"])
+                              database=DB_CONFIG["dbname"],
+                              sslmode=DB_CONFIG["sslmode"])
         return __pool.connection()

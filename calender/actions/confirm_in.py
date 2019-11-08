@@ -1,12 +1,13 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
-import tornado.web
+import tornado.gen
 import asyncio
 import time
 import uuid
 import logging
-from calender.model.data import *
-from calender.externals.sendMessage import push_message
+from calender.common import global_data
+from calender.model.data import i18n_text, make_text
+from calender.externals.send_message import push_message
 from calender.actions.message import invalid_message, prompt_input
 from calender.model.processStatusDBHandle import get_status_by_user, \
     insert_replace_status_by_user_date
@@ -43,7 +44,7 @@ def deal_confirm_in(account_id, callback):
                              my_time, my_end_time)
     """
     current_date = time.strftime("%Y-%m-%d", time.localtime(my_time))
-    calender_id = globalData.get_value(API_BO["calendar"]["name"], None)
+    calender_id = global_data.get_value(API_BO["calendar"]["name"], None)
     if calender_id is None:
         calender_id = get_calender_id()
         if calender_id is None:
@@ -73,7 +74,7 @@ def deal_confirm_in(account_id, callback):
 
 
 @tornado.gen.coroutine
-def confirm_in(account_id, current_date, callback):
+def confirm_in(account_id, current_date, _, callback):
     content = yield deal_confirm_in(account_id, callback)
     if content is None:
         return False, "confirm in failed. content is None"

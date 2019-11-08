@@ -3,8 +3,7 @@
 import tornado.web
 import time
 import logging
-from calender.model.data import *
-from calender.externals.sendMessage import push_messages
+from calender.externals.send_message import push_messages
 from calender.actions.message import invalid_message, error_message
 from calender.actions.direct_sign_in import deal_sign_in
 from calender.actions.direct_sign_out import deal_sign_out
@@ -65,7 +64,7 @@ def deal_user_message(account_id, message, create_time):
 
 
 @tornado.gen.coroutine
-def deal_message(account_id, message, create_time):
+def deal_message(account_id, _, create_time, message):
     contents = yield deal_user_message(account_id, message, create_time)
     if contents is None:
         return False, "confirm out failed."

@@ -6,7 +6,6 @@ import json
 from calender.common.utils import auth_get, auth_post
 from calender.constant import API_BO, OPEN_API, ADMIN_ACCOUNT, DOMAIN_ID
 import tornado.gen
-from calender.common import globalData
 import uuid
 import pytz
 

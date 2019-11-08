@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 import tornado.web
 import logging
-from calender.model.data import *
+from calender.model.data import i18n_text, make_text, make_i18n_image_url, \
+    make_i18n_label, i18n_display_text, \
+    make_postback_action, make_image_carousel_column, make_image_carousel
 from calender.constant import RICH_MENUS, LOCAL, IMAGE_CAROUSEL
-from calender.externals.sendMessage import push_messages
-from calender.common.globalData import get_value
+from calender.externals.send_message import push_messages
+from calender.common.global_data import get_value
 from calender.externals.richmenu import set_user_specific_rich_menu
 
 LOGGER = logging.getLogger("calender")
@@ -164,7 +166,7 @@ def start_content(account_id):
 
 
 @tornado.gen.coroutine
-def start(account_id):
+def start(account_id, _, __, ___):
     contents = yield start_content(account_id)
     success_code, error_message = yield push_messages(account_id, contents)
     return success_code, error_message

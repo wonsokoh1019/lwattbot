@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 import time
 import logging
-from calender.model.data import *
+from calender.model.data import make_i18n_label, make_message_action, \
+    i18n_display_text, make_postback_action, \
+    make_quick_reply_item, i18n_text, make_text
 from calender.constant import API_BO, IMAGE_CAROUSEL, \
     RICH_MENUS, RECEIVE_ACCOUNT
 

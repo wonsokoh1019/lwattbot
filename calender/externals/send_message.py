@@ -8,16 +8,7 @@ from calender.common.utils import auth_post, replace_url_bot_no
 from tornado.httpclient import AsyncHTTPClient
 from calender.constant import API_BO, OPEN_API
 
-
 LOGGER = logging.getLogger("calender")
-
-"""
-type req struct {
-    AccountId *string     `json:"accountId,omitempty"`
-    RoomId    *string     `json:"roomId,omitempty"`
-    Content   interface{} `json:"content"`
-}
-"""
 
 
 @tornado.gen.coroutine

@@ -6,7 +6,7 @@ internal hello
 import json
 import logging
 import tornado.web
-from calender.checkAndHandleActions import *
+from calender.check_and_handle_actions import CheckAndHandleActions
 
 LOGGER = logging.getLogger("calender")
 
@@ -22,11 +22,11 @@ class CallbackHandler(tornado.web.RequestHandler):
         support post
         """
 
-        path = self.request.uri
-        LOGGER.info("request para path:%s", path)
+        LOGGER.info("request para path:%s", self.request.uri)
         try:
             body = json.loads(self.request.body)
-        except Exception:
+        except json.JSONDecodeError:
+            LOGGER.exception('Failed parse json:%s' % self.request.body)
             raise tornado.web.HTTPError(403, "boy is not json.")
 
         LOGGER.info("request para body:%s", self.request.body)

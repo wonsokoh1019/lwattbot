@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import tornado.web
 import logging
-from calender.model.data import *
-from calender.externals.sendMessage import push_message
+from calender.model.data import make_i18n_content_texts, make_button
+from calender.externals.send_message import push_message
 from calender.actions.message import reminder_message, create_button_actions
 from calender.model.processStatusDBHandle import set_status_by_user_date, \
     get_status_by_user
@@ -44,7 +44,7 @@ def sign_out_content(account_id, current_date):
 
 
 @tornado.gen.coroutine
-def sign_out(account_id, current_date):
+def sign_out(account_id, current_date, _, __):
     content = yield sign_out_content(account_id, current_date)
     if content is None:
         return False, "sign out failed. content is None"

@@ -19,7 +19,7 @@ LOGGER = logging.getLogger("calender")
 
 cmd_message = ["start", "clean"]
 
-def check_is_message_time(message):
+def is_message_time(message):
     if message is None or message in cmd_message \
             or message.find("confirm_out") != -1 \
             or message.find("confirm_in") != -1:
@@ -35,6 +35,10 @@ class CheckAndHandleActions:
     message = None
     __create_time = None
     __current_date = None
+    __content_type = ""
+    __content_post_back = ""
+    __handle = None
+    __user_message = None
 
     def __init__(self):
         self.__create_time = time.time()
@@ -59,74 +63,67 @@ class CheckAndHandleActions:
             return
 
         type = body.get("type", "")
-        content_type = ""
-        content_post_back = ""
+        
         content = body.get("content", None)
         if content is not None:
-            content_type = content.get("type", "")
-            content_post_back = content.get("postback", "")
+            self.__content_type = content.get("type", "")
+            self.__content_post_back = content.get("postback", "")
             self.__text = content.get("text", None)
 
         if type == "postback":
             self.__post_back = body.get("data", "")
 
-        if type == "message" and content_type == "text" \
-                and content_post_back == "" \
-                and check_is_message_time(self.__text):
-            self.code, self.message = yield deal_message(self.__account_id,
-                                                         self.__text,
-                                                         self.__create_time)
+        if type == "message" and self.__content_type == "text" \
+                and self.__content_post_back == "" \
+                and is_message_time(self.__text):
+            self.__user_message = self.__text
+            self.__handle = deal_message
 
-        elif content_post_back == "start":
-            self.code, self.message = yield start(self.__account_id)
+        elif self.__content_post_back == "start":
+            self.__handle = start
 
         elif self.__post_back == "to_first":
-            self.code, self.message = to_first(self.__account_id)
+            self.__handle = to_first
 
         elif self.__post_back == "sign_in":
-            self.code, self.message = yield sign_in(self.__account_id,
-                                                    self.__current_date)
+            self.__handle = sign_in
 
         elif self.__post_back == "sign_out":
-            self.code, self.message = yield sign_out(self.__account_id,
-                                                     self.__current_date)
+            self.__handle = sign_out
 
         elif self.__post_back == "direct_sign_in" \
-                or content_post_back == "direct_sign_in":
-            self.code, self.message = yield direct_sign_in(self.__account_id,
-                                                           self.__current_date,
-                                                           self.__create_time)
+                or self.__content_post_back == "direct_sign_in":
+            self.__handle = direct_sign_in
 
         elif self.__post_back == "direct_sign_out" \
-                or content_post_back == "direct_sign_out":
-            self.code, self.message = yield direct_sign_out(self.__account_id,
-                                                            self.__current_date,
-                                                            self.__create_time)
+                or self.__content_post_back == "direct_sign_out":
+            self.__handle = direct_sign_out
 
         elif self.__post_back == "manual_sign_in" \
-                or content_post_back == "manual_sign_in":
-            self.code, self.message = yield  manual_sign_in(self.__account_id,
-                                                            self.__current_date)
+                or self.__content_post_back == "manual_sign_in":
+            self.__handle = manual_sign_in
 
         elif self.__post_back == "manual_sign_out" \
-                or content_post_back == "manual_sign_out":
-            self.code, self.message = yield manual_sign_out(self.__account_id,
-                                                            self.__current_date)
+                or self.__content_post_back == "manual_sign_out":
+            self.__handle = manual_sign_out
+
         elif self.__post_back.find("confirm_in") != -1:
-            message = self.__post_back
+            self.__user_message = self.__post_back
             if self.__post_back is None:
-                message = self.__text
-            self.code, self.message = yield confirm_in(self.__account_id,
-                                                       self.__current_date,
-                                                       message)
+                self.__user_message = self.__text
+            self.__handle = confirm_in
 
         elif self.__post_back.find("confirm_out") != -1:
-            message = self.__post_back
+            self.__user_message = self.__post_back
             if self.__post_back is None:
-                message = self.__text
-            self.code, self.message = yield confirm_out(self.__account_id,
-                                                        self.__current_date,
-                                                        message)
+                self.__user_message = self.__text
+            self.__handle = confirm_out
+
+        if self.__handle is not None:
+            self.code, self.message = yield self.__handle(self.__account_id,
+                                                          self.__current_date,
+                                                          self.__create_time,
+                                                          self.__user_message)
         else:
             self.error_message = "Error \"callback\" type."
         return

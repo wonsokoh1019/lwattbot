@@ -3,9 +3,12 @@
 
 import requests
 import logging
+from tornado.web import HTTPError
 from calender.common.token import generate_token
-from calender.common.globalData import get_value, set_value
+from calender.common.global_data import get_value, set_value
 from calender.constant import IP_TOKEN
+
+LOGGER = logging.getLogger("calender")
 
 
 def refresh_token():
@@ -18,13 +21,14 @@ def refresh_token():
 
 
 def get_token():
-    return set_value("token", None)
+    return get_value("token", None)
 
 
 def replace_url_bot_no(url):
     bot_no = get_value("bot_no", None)
     if bot_no is None:
-        return None
+        LOGGER.info("internal error. bot no is None")
+        raise HTTPError(500, "internal error. bot no is None")
 
     url = url.replace("_BOT_NO_", bot_no)
     return url

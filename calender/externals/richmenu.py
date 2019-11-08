@@ -4,7 +4,8 @@
 import io
 import logging
 import json
-from calender.model.data import *
+from calender.model.data import make_size, make_bound, i18n_display_text, \
+    make_i18n_label, make_postback_action, make_add_rich_menu, make_area
 from calender.common import utils
 from calender.constant import API_BO, OPEN_API, RICH_MENUS
 import tornado.gen
@@ -24,7 +25,7 @@ def upload_content(file_path):
     url = API_BO["upload_url"]
     url = utils.replace_url_bot_no(url)
     if url is None:
-        LOGGER.info("user_no is None . url:%s", url)
+        LOGGER.info("url is None . url:%s", url)
         return None
 
     LOGGER.info("upload content . url:%s", url)
@@ -228,9 +229,8 @@ def init_rich_menu(local=None):
                     il8n_rich_menu_id[info["name"]] = menu["richMenuId"]
                     return il8n_rich_menu_id
 
-    if local in RICH_MENUS \
-            and RICH_MENUS[local]["name"] \
-            not in il8n_rich_menu_id:
+    if local in RICH_MENUS and \
+            RICH_MENUS[local]["name"] not in il8n_rich_menu_id:
 
         rich_menu_id = make_add_rich_menu_body(RICH_MENUS[local]["name"])
 
