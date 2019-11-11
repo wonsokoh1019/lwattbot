@@ -5,11 +5,12 @@ import asyncio
 import time
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from tornado.web import HTTPError
 from calender.common import global_data
 from calender.common.local_timezone import local_date_time
 from calender.model.data import i18n_text, make_text
+from calender.externals.calender_req import create_schedule
 from calender.externals.send_message import push_message
 from calender.actions.message import invalid_message, prompt_input
 from calender.model.processStatusDBHandle import get_status_by_user, \
@@ -31,27 +32,33 @@ def confirm_in_message():
 
 
 @tornado.gen.coroutine
-def deal_confirm_in(account_id, callback):
+def deal_confirm_in(account_id, create_time, callback):
     pos = callback.find("time=")
     str_time = callback[pos+5:]
     my_time = int(str_time)
     my_end_time = my_time + 60
-    date_time = local_date_time(my_time)
-    current_date = datetime.strftime(date_time, '%Y-%m-%d')
+    begin_time = local_date_time(my_time)
+    current_date = datetime.strftime(begin_time, '%Y-%m-%d')
 
     info = get_schedule_by_user(account_id, current_date)
-    schedule_id = str(uuid.uuid4()) + account_id
     if info is not None:
         raise HTTPError(500, "Internal data error")
     # todo deal calender api logic
-    set_schedule_by_user(schedule_id, account_id, current_date,
+
+    end_time = begin_time + timedelta(minutes=1)
+    cur_time = local_date_time(create_time)
+
+    schedule_uid = create_schedule(cur_time, end_time, begin_time, account_id)
+
+    set_schedule_by_user(schedule_uid, account_id, current_date,
                          my_time, my_end_time)
+
     return confirm_in_message()
 
 
 @tornado.gen.coroutine
-def confirm_in(account_id, current_date, _, callback):
-    content = yield deal_confirm_in(account_id, callback)
+def confirm_in(account_id, current_date, create_time, callback):
+    content = yield deal_confirm_in(account_id, create_time, callback)
     yield push_message(account_id, content)
 
     insert_replace_status_by_user_date(account_id, current_date,

@@ -109,10 +109,7 @@ def init_calender_first():
         calender_id = init_calender()
         insert_init_status("calender", calender_id)
 
-    if calender_id is None:
-        raise Exception("init calender failed.")
-    else:
-        global_data.set_value(API_BO["calendar"]["name"], calender_id)
+    global_data.set_value(API_BO["calendar"]["name"], calender_id)
 
 
 def start_calender():
@@ -127,7 +124,7 @@ def start_calender():
     init_logger()
     check_init_bot()
     init_rich_menu_first()
-    # todo init_calender_first()
+    init_calender_first()
 
     asyncio.get_event_loop().run_forever()
     server.stop()

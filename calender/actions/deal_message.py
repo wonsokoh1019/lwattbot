@@ -25,7 +25,7 @@ def deal_user_message(account_id, current_date, create_time, message):
     if content is None or content[0] is None:
         LOGGER.info("status is None account_id:%s message:%s content:%s",
                     account_id, message, str(content))
-        raise HTTPError(200, "Messages not need to be processed")
+        raise HTTPError(403, "Messages not need to be processed")
 
     status = content[0]
     process = content[1]
@@ -35,7 +35,7 @@ def deal_user_message(account_id, current_date, create_time, message):
         if status == "wait_in" or status == "wait_out":
             return error_message()
         else:
-            raise HTTPError(200, "Messages not need to be processed")
+            raise HTTPError(403, "Messages not need to be processed")
 
     tm = date_time.replace(hour=int(user_time / 100),
                            minute=int(user_time % 100))

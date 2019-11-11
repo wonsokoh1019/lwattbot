@@ -74,19 +74,19 @@ API_BO = {
 
             "calendar":
             {
-                "name": "test_calendar",
-                "test_calender_id": "test calender id",
-                "create_calender_url": "https://" + DEVELOP_API_DOMAIN + "/"
-                                       + API_ID + "/calendar/createCalendar",
-                "get_calenders_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
-                                     + API_ID
-                                     + "/calendar/rest/v1/users/me/"
+                "name": "calendar bot",
+                "create_calender_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
+                                       + API_ID +
+                                       "/calendar/v1/_EXTERNAL_KEY_/"
                                        "calendarList",
-                "create_schedule_url": "https://" + DEVELOP_API_DOMAIN + "/"
-                                       + API_ID + "/calendar/createSchedule",
-                "modify_schedule_url": "https://" + DEVELOP_API_DOMAIN + "/"
-                                       + API_ID + "/calendar/modifySchedule",
-                "TZone": "Asia/Seoul"
+                "create_schedule_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
+                                       + API_ID +
+                                       "/calendar/v1/_EXTERNAL_KEY_/calendars/"
+                                       "_CALENDER_ID_/events",
+                "modify_schedule_url": "https://" + DEVELOP_API_DOMAIN + "/r/"
+                                       + API_ID +
+                                       "/calendar/v1/_EXTERNAL_KEY_/calendars/"
+                                       "_CALENDER_ID_/events/_CALENDER_UUID_",
             },
 
             "TZone":
