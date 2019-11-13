@@ -4,7 +4,7 @@ import os
 
 # account
 LANG = "kr"    # ["kr"|"en"|"jp"]
-ADMIN_ACCOUNT = "admin@krbot.com"
+ADMIN_ACCOUNT = "admin@lwbottest"
 RECEIVE_ACCOUNT = "admin02@nwetest.com"
 DOMAIN_ID = 18644
 
