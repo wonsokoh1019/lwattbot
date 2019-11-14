@@ -5,7 +5,6 @@ import os
 # account
 LANG = "kr"    # ["kr"|"en"|"jp"]
 ADMIN_ACCOUNT = "admin@lwbottest02"
-RECEIVE_ACCOUNT = "admin@lwbottest02"
 DOMAIN_ID = 10123847
 	
 # api
