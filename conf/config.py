@@ -7,13 +7,13 @@ LANG = "kr"    # ["kr"|"en"|"jp"]
 ADMIN_ACCOUNT = "admin@lwbottest02"
 RECEIVE_ACCOUNT = "admin@lwbottest02"
 DOMAIN_ID = 10123847
-
+	
 # api
 API_ID = "jp1HOduOeHyIK"
 CONSUMER_KEY = "4d66rICCBuJtLIo5XYgf"
 
 TOKEN = None
-SERVER_ID = "lwtest"
+SERVER_ID = "b66941c7d70a4e409c610bb22c316995"
 PRIVATE_KEY_NAME = "private_20191114141800.key"
 
 # LOCAL ADDRESS
